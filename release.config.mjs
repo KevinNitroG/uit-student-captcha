@@ -23,7 +23,7 @@ export default {
       {
         assets: [
           {
-            path: "dist/@KevinNitroG/vnpay-userscript.user.js",
+            path: "dist/uit-student-captcha.user.js",
           },
         ],
       },
