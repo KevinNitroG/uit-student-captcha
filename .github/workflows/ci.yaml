@@ -9,20 +9,6 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v6
-        with:
-          cache: pnpm
-          node-version-file: package.json
-      - run: pnpm install
-      - run: pnpm tsc
-
-  build-and-release:
-    needs: check
-    name: Build and Release
-    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
@@ -35,6 +21,7 @@ jobs:
           cache: pnpm
           node-version-file: package.json
       - run: pnpm install
+      - run: pnpm tsc
       - run: pnpm semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
