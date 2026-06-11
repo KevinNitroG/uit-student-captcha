@@ -12,16 +12,25 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
         with:
-          cache: pnpm
-          node-version-file: package.json
+          cache: true
+          version: ^11
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .tool-versions
+
       - run: pnpm install
+
       - run: pnpm tsc
+
       - run: pnpm semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
