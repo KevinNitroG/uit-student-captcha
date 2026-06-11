@@ -12,6 +12,17 @@ dist
 dist-ssr
 *.local
 
+# Nx
+.nx/cache
+.nx/workspace-data
+
+# TypeScript build info / typecheck emit
+*.tsbuildinfo
+out-tsc
+
+# Coverage
+coverage
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -2,9 +2,10 @@
   // Spec: vitest tests. Run on Node but simulate the browser via jsdom, so they
   // need both DOM libs and vitest globals. Includes src so specs can import sources
   // directly (no project reference, which would force the app to emit).
-  "extends": "./tsconfig.base.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.spec.tsbuildinfo",
+    "outDir": "./out-tsc/spec",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "types": ["vitest/globals"]
   },

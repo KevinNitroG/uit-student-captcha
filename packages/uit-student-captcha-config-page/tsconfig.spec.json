@@ -1,0 +1,12 @@
+{
+  // Spec: Vitest + React Testing Library tests running under jsdom.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.spec.tsbuildinfo",
+    "outDir": "./out-tsc/spec",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "types": ["vitest/globals", "node"]
+  },
+  "include": ["src", "test"]
+}

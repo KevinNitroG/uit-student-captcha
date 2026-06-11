@@ -1,0 +1,7 @@
+{
+  "name": "uit-student-captcha-config-page",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "packages/uit-student-captcha-config-page/src",
+  "tags": ["scope:config-page"]
+}

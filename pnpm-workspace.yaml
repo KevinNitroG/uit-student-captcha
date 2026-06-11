@@ -1,2 +1,6 @@
-onlyBuiltDependencies:
-  - esbuild
+packages:
+  - packages/*
+
+allowBuilds:
+  esbuild: true
+  nx: true

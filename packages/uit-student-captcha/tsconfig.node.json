@@ -1,0 +1,12 @@
+{
+  // Node: build-tooling config files only (they run on Node, not in the browser).
+  // No DOM lib here — catches accidental DOM usage in build config.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "outDir": "./out-tsc/node",
+    "lib": ["ES2023"],
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts", "vitest.config.ts", "package.json"]
+}

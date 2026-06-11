@@ -1,0 +1,16 @@
+{
+  "name": "uit-student-captcha-config-page",
+  "private": true,
+  "type": "module",
+  "description": "Hosted React SPA for configuring the UIT Student Captcha userscript's OCR providers.",
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0"
+  }
+}

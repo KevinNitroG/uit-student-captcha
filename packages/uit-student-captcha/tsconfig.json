@@ -1,0 +1,10 @@
+{
+  // Per-package solution file: `tsc -b` here builds the app, build-config, and
+  // spec projects for the userscript package.
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.spec.json" }
+  ]
+}

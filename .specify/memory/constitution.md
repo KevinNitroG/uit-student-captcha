@@ -1,9 +1,11 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.0.0 → 1.1.0
-Bump rationale: Added testing discipline (Vitest + jsdom unit tests). Materially expanded
-guidance → MINOR.
+Version change: 1.1.0 → 1.2.0
+Bump rationale: Restructured into a pnpm + Nx monorepo (userscript package + hosted
+React config-page package); replaced semantic-release with Nx Release (fixed group,
+git-tag versioning); typecheck via the @nx/js/typescript plugin (tsgo compiler).
+Materially expanded platform & workflow guidance → MINOR.
 
 Modified principles:
   - III. Strict Type Safety — rationale updated; type safety is no longer the *only* safety
@@ -91,16 +93,25 @@ disrupting or compromising the user's session.
 
 ## Technology & Platform Constraints
 
-- **Language**: TypeScript, compiled via Vite with `vite-plugin-monkey`.
-- **Build**: Userscript bundle is produced by `vite build`; the script header is declared in
-  `vite.config.ts` (`monkey({ userscript: { ... } })`) — header/match/grant changes live there,
-  not scattered in source.
+- **Repository**: pnpm + Nx monorepo. `packages/uit-student-captcha` is the userscript;
+  `packages/uit-student-captcha-config-page` is a React + Vite SPA deployed to GitHub Pages
+  that configures the userscript. Tasks run through Nx (`nx run-many -t typecheck test build`)
+  with inference plugins: `@nx/js/typescript` (typecheck, tsgo), `@nx/vite` (build/serve),
+  `@nx/vitest` (test).
+- **Language**: TypeScript, compiled via Vite with `vite-plugin-monkey` (userscript) and
+  `@vitejs/plugin-react` (config page).
+- **Build**: The userscript bundle is produced by `vite build` (orchestrated by Nx); the
+  script header is declared in the package's `vite.config.ts` (`monkey({ userscript: { ... } })`)
+  — header/match/grant/connect changes live there, not scattered in source.
 - **Target**: Tampermonkey/Violentmonkey-compatible userscript matching
-  `https://student.uit.edu.vn/*`.
+  `https://student.uit.edu.vn/*` and the hosted config page
+  `https://kevinnitrog.github.io/uit-student-captcha/*`.
 - **Dependencies**: Keep runtime dependencies minimal; prefer the platform/host APIs. New
   runtime dependencies MUST be justified against bundle size and userscript constraints.
-- **Versioning**: Releases are driven by `semantic-release` with Conventional Commits; the
-  userscript `version` derives from `package.json`.
+- **Versioning**: Releases are driven by **Nx Release** with Conventional Commits — a single
+  fixed release group versions both packages together under one `v{version}` git tag. The
+  current version is resolved from git tags (disk fallback); Nx writes it into `package.json`
+  at release time, from which the userscript `version` header derives.
 
 ## Testing Discipline
 
@@ -118,10 +129,10 @@ logic that would otherwise only be exercisable by hand in a real browser session
 
 ## Development Workflow
 
-- Commits MUST follow Conventional Commits (feat/fix/chore/docs/refactor…) so semantic-release
+- Commits MUST follow Conventional Commits (feat/fix/chore/docs/refactor…) so Nx Release
   can version correctly.
-- Every change MUST pass `pnpm tsc` (typecheck), the Vitest suite, and produce a successful
-  `vite build`.
+- Every change MUST pass `pnpm exec nx run-many -t typecheck test build` (tsgo typecheck,
+  the Vitest suite, and a successful Vite build) across all affected packages.
 - Changes touching DOM selectors MUST be isolated to the View layer and noted in the commit.
 - Adding a resolver MUST include its config schema and registration in the resolver
   registry/factory — and nothing in the ViewModel/View.
@@ -142,4 +153,4 @@ bump per semantic versioning:
 Compliance is reviewed at every plan and PR. When guidance here conflicts with convenience,
 this document wins.
 
-**Version**: 1.1.0 | **Ratified**: 2026-06-11 | **Last Amended**: 2026-06-11
+**Version**: 1.2.0 | **Ratified**: 2026-06-11 | **Last Amended**: 2026-06-12

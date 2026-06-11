@@ -4,13 +4,22 @@ on:
   push:
     branches:
       - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Run Nx Release (version, changelog, tag, GitHub release, upload userscript asset)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
-    name: Check
+    name: Typecheck · Test · Build
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v6
         with:
@@ -26,13 +35,101 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version-file: .tool-versions
+          cache: pnpm
 
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
 
-      - run: pnpm tsc
+      - name: Typecheck, test, and build all projects
+        run: pnpm exec nx run-many -t typecheck test build
 
-      - run: pnpm test
+  release:
+    name: Release (Nx Release) + Deploy Config Page
+    needs: check
+    # Manual, opt-in: trigger from the Actions tab with the "release" input checked.
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.release }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create release, push tag/commit
+      pages: write # deploy config page to GitHub Pages
+      id-token: write # OIDC for actions/deploy-pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-      - run: pnpm semantic-release
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          cache: true
+          version: ^11
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .tool-versions
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Fixed/locked release group: both packages share one version + tag (v{version}).
+      # The version is bumped from Conventional Commits FIRST so the build can bake it
+      # into the userscript header. Every subsequent step is GATED on a version having
+      # actually been produced: if there are no releasable commits, Nx writes no version
+      # (package.json has no static version field — versions live in git tags), so we
+      # detect that, skip the rest, and the job is a clean no-op.
+      - name: Version (Conventional Commits)
+        id: version
+        run: |
+          pnpm exec nx release version --yes
+          VERSION="$(node -p "require('./packages/uit-student-captcha/package.json').version || ''")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [ -z "$VERSION" ]; then
+            echo "::notice::No releasable changes detected — nothing to release."
+          else
+            echo "::notice::Releasing v$VERSION"
+          fi
+
+      - name: Build with the new version baked in
+        if: steps.version.outputs.version != ''
+        run: pnpm exec nx run-many -t build
+
+      - name: Changelog, tag, push, and GitHub release
+        if: steps.version.outputs.version != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm exec nx release changelog "${{ steps.version.outputs.version }}" --yes
+
+      - name: Attach userscript asset to the release
+        if: steps.version.outputs.version != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "v${{ steps.version.outputs.version }}" \
+            packages/uit-student-captcha/dist/uit-student-captcha.user.js --clobber
+
+      # Deploy the config page to GitHub Pages as part of the release (a release
+      # created with GITHUB_TOKEN does not fire the `release` event, so we deploy
+      # inline here rather than from a separate event-triggered workflow). The config
+      # page was already produced by the "Build" step above (nx run-many -t build).
+      - name: Configure GitHub Pages
+        if: steps.version.outputs.version != ''
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        if: steps.version.outputs.version != ''
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: packages/uit-student-captcha-config-page/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        if: steps.version.outputs.version != ''
+        uses: actions/deploy-pages@v4

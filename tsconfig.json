@@ -1,10 +1,10 @@
 {
-  // Solution file: holds no sources of its own, just references the sub-projects.
-  // `tsc -b` builds them all (app bundle, vite config, vitest specs).
+  // Workspace solution file. Holds no sources of its own — it references every
+  // package so `tsc -b` from the repo root typechecks the whole monorepo. Each
+  // package extends ./tsconfig.base.json for the shared strict compiler options.
   "files": [],
   "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" },
-    { "path": "./tsconfig.spec.json" }
+    { "path": "./packages/uit-student-captcha" },
+    { "path": "./packages/uit-student-captcha-config-page" }
   ]
 }
