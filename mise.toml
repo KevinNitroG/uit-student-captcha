@@ -1,3 +1,8 @@
+#:schema https://raw.githubusercontent.com/jdx/mise/refs/heads/main/schema/mise.json
+
 [tools]
 node = "25.6.1"
 pnpm = "10.28.2"
+
+[shell_alias]
+specify = "mise exec pipx:git+https://github.com/github/spec-kit.git -- specify"
