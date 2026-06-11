@@ -31,6 +31,8 @@ jobs:
 
       - run: pnpm tsc
 
+      - run: pnpm test
+
       - run: pnpm semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

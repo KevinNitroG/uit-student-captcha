@@ -1,0 +1,15 @@
+{
+  // Spec project: extends the app config and adds Vitest globals. Includes src so
+  // specs can import sources directly under a composite build (no project reference,
+  // which would force the app to emit). Keeps vitest types out of the userscript
+  // bundle (tsconfig.app.json). The vitest.config.ts tooling file lives in
+  // tsconfig.node.json alongside vite.config.ts.
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.spec.tsbuildinfo",
+    "types": ["vitest/globals"]
+  },
+  "include": ["src", "test"],
+  "exclude": []
+}
