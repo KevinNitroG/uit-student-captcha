@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "chrome-devtools-brave": {
+      "type": "stdio",
+      "command": "mise",
+      "args": [
+        "exec",
+        "npm:chrome-devtools-mcp@latest",
+        "--",
+        "chrome-devtools-mcp",
+        "--no-usage-statistics",
+        "--autoConnect=true",
+        "--userDataDir=${HOME}/.config/BraveSoftware/Brave-Browser",
+        "--experimentalScreencast=true",
+        "--experimentalDevtools=true"
+      ]
+    }
+  }
+}
