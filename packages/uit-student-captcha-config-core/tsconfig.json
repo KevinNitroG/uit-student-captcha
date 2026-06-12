@@ -1,0 +1,9 @@
+{
+  // Per-package solution file: `tsc -b` here builds the lib and spec projects.
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.lib.json" },
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.spec.json" }
+  ]
+}

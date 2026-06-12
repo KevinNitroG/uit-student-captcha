@@ -1,0 +1,11 @@
+{
+  // Node: build-tooling config files only (they run on Node, not in the browser).
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "outDir": "./out-tsc/node",
+    "lib": ["ES2023"],
+    "types": ["node"]
+  },
+  "include": ["vitest.config.ts", "package.json"]
+}

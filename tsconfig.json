@@ -4,6 +4,7 @@
   // package extends ./tsconfig.base.json for the shared strict compiler options.
   "files": [],
   "references": [
+    { "path": "./packages/uit-student-captcha-config-core" },
     { "path": "./packages/uit-student-captcha" },
     { "path": "./packages/uit-student-captcha-config-page" }
   ]

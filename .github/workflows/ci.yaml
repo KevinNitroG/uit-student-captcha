@@ -16,6 +16,14 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Baked into both bundles at build time via Vite (`import.meta.env` in source,
+# `loadEnv()` in the two vite.config.ts files). Drives the config-page origin used
+# for the userscript @match/@connect, the menu-command URL, and the postMessage
+# bridge origin check. Locally this defaults to http://localhost:3000; in CI we
+# pin the deployed GitHub Pages origin so the released artifacts target production.
+env:
+  VITE_CONFIG_PAGE_ORIGIN: https://kevinnitrog.github.io/uit-student-captcha
+
 jobs:
   check:
     name: Typecheck · Test · Build

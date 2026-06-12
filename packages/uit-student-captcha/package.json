@@ -3,7 +3,10 @@
   "private": true,
   "type": "module",
   "description": "Tampermonkey userscript that auto-fills the OCR captcha on the UIT student portal sign-in form.",
+  "dependencies": {
+    "uit-student-captcha-config-core": "workspace:*"
+  },
   "devDependencies": {
-    "vite-plugin-monkey": "^8.0.6"
+    "vite-plugin-monkey": "catalog:"
   }
 }

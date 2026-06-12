@@ -1,0 +1,11 @@
+{
+  // Spec: Vitest tests for the shared config logic (pure — Node environment).
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.spec.tsbuildinfo",
+    "outDir": "./out-tsc/spec",
+    "lib": ["ES2020", "DOM"],
+    "types": ["vitest/globals", "node"]
+  },
+  "include": ["src", "test"]
+}
