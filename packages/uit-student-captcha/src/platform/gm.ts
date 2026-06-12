@@ -1,6 +1,25 @@
-// Typed, narrow wrappers over the granted Greasemonkey APIs. The loose GM typing is
-// contained in this module and narrowed at the boundary (Constitution III). Source
-// outside platform/ never touches a GM_* global directly.
+// Typed, narrow wrappers over the granted Greasemonkey APIs. The GM_* functions and
+// unsafeWindow are imported from vite-plugin-monkey's "$" module (NOT referenced as
+// bare globals): in dev the userscript code runs as separately-loaded ES modules where
+// Tampermonkey's GM_* are not in scope, and "$" resolves them correctly in both dev
+// and build. The loose typing is contained in this module (Constitution III).
+
+import {
+  GM_getValue,
+  GM_openInTab,
+  GM_registerMenuCommand,
+  GM_setValue,
+  GM_xmlhttpRequest,
+  unsafeWindow,
+} from "$";
+
+/** The real page window for postMessage bridging. Under a userscript sandbox the
+ *  global `window` is a proxy that is NOT wired to the page's message channel, so a
+ *  page↔userscript bridge must use unsafeWindow. Falls back to `window` when running
+ *  unsandboxed (e.g. jsdom tests, where unsafeWindow is undefined). */
+export function getPageWindow(): Window {
+  return unsafeWindow ?? window;
+}
 
 /** Read a string from GM storage, falling back when absent or not a string. */
 export function gmGetValue(key: string, fallback: string): string {
@@ -20,9 +39,8 @@ export function gmRegisterMenuCommand(caption: string, onClick: () => void): voi
 
 /** Open a URL in a new tab (GM_openInTab when granted, else window.open). */
 export function gmOpenInTab(url: string): void {
-  const fn = (globalThis as Record<string, unknown>)["GM_openInTab"];
-  if (typeof fn === "function") {
-    (fn as (u: string, options?: unknown) => void)(url, { active: true });
+  if (typeof GM_openInTab === "function") {
+    GM_openInTab(url, { active: true });
   } else {
     window.open(url, "_blank");
   }
@@ -30,7 +48,7 @@ export function gmOpenInTab(url: string): void {
 
 // --- GM_xmlhttpRequest shim --------------------------------------------------
 // The privileged cross-origin transport. The HttpClient seam (model/http) builds on
-// this; tests replace the global GM_xmlhttpRequest with a fake.
+// this; tests replace the GM_xmlhttpRequest fake on globalThis.
 
 export interface GmRequestDetails {
   method: "GET" | "POST";

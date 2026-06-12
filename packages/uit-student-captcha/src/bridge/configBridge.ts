@@ -31,6 +31,7 @@ export class ConfigBridge {
 
   start(): void {
     this.target.addEventListener("message", (event) => this.handle(event as MessageEvent));
+    console.info(`[uit-captcha] config bridge ready (origin=${this.allowedOrigin})`);
   }
 
   private reply(message: BridgeMessage): void {
@@ -48,9 +49,11 @@ export class ConfigBridge {
   }
 
   handle(event: MessageEvent): void {
-    // Trust boundary: reject anything not from the config-page origin/window.
+    // Trust boundary: the origin check authenticates the sender. We deliberately do
+    // NOT require event.source === window: under the userscript sandbox the script's
+    // `window` is a proxy distinct from the real page window that postMessage reports
+    // as event.source, so an identity check there silently drops every message.
     if (event.origin !== this.allowedOrigin) return;
-    if (event.source !== this.target) return;
     if (!isBridgeMessage(event.data)) return;
 
     const message = event.data;

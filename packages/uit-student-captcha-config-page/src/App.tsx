@@ -24,8 +24,13 @@ export function App({ client }: AppProps = {}) {
   const [save, setSave] = useState<SaveState>({ kind: "idle" });
 
   useEffect(() => {
+    let settled = false;
+    let timer: ReturnType<typeof setInterval> | undefined;
+
     const unsubscribe = bridge.onMessage((message) => {
       if (message.type === "uoc:value") {
+        settled = true;
+        if (timer) clearInterval(timer);
         setConfig(message.payload);
         setConnected(true);
         setDirty(false);
@@ -37,8 +42,24 @@ export function App({ client }: AppProps = {}) {
         setSave({ kind: "error", message: message.message });
       }
     });
+
+    // The userscript bridge attaches at document-idle, which can race the SPA's first
+    // request. Re-ask until the bridge answers (or we give up and show "not detected").
     bridge.requestConfig();
-    return unsubscribe;
+    let attempts = 0;
+    timer = setInterval(() => {
+      if (settled || attempts >= 15) {
+        clearInterval(timer);
+        return;
+      }
+      attempts += 1;
+      bridge.requestConfig();
+    }, 400);
+
+    return () => {
+      if (timer) clearInterval(timer);
+      unsubscribe();
+    };
   }, [bridge]);
 
   const current = config ?? DEFAULT_CONFIG;

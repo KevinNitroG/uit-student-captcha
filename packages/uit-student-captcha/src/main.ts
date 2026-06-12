@@ -15,7 +15,7 @@ import {
 } from "uit-student-captcha-config-core";
 import { ConfigBridge } from "./bridge/configBridge.ts";
 import { GmHttpClient } from "./model/http/HttpClient.ts";
-import { gmGetValue, gmOpenInTab, gmRegisterMenuCommand } from "./platform/gm.ts";
+import { getPageWindow, gmGetValue, gmOpenInTab, gmRegisterMenuCommand } from "./platform/gm.ts";
 import { CaptchaViewModel } from "./viewmodel/CaptchaViewModel.ts";
 import { PortalView } from "./view/PortalView.ts";
 
@@ -44,7 +44,9 @@ function runPortalMode(): void {
 }
 
 function runConfigMode(configOrigin: string): void {
-  new ConfigBridge({ allowedOrigin: configOrigin }).start();
+  // Use the real page window (unsafeWindow) so postMessage reaches the SPA — the
+  // sandbox `window` proxy is not wired to the page's message channel.
+  new ConfigBridge({ allowedOrigin: configOrigin, target: getPageWindow() }).start();
 }
 
 function bootstrap(): void {
