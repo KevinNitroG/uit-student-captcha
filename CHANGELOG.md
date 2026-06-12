@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.1.1...v1.1.2) (2026-06-12)
+
+
+### Continuous Integration
+
+* **release:** bypass Merge plugin so release PRs round-trip and cut tags ([bd74c45](https://github.com/KevinNitroG/uit-student-captcha/commit/bd74c45e3c10445b44429258bd7de64b2c9d315c))
+
 ## [1.1.1](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.1.0...v1.1.1) (2026-06-12)
 
 
