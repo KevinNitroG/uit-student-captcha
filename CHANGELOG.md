@@ -1,0 +1,20 @@
+# Changelog
+
+## [1.1.0](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.0.0...v1.1.0) (2026-06-12)
+
+
+### Features
+
+* OCR captcha foundation, US1 autofill, OCR.space resolver; co-locate tests ([cc77800](https://github.com/KevinNitroG/uit-student-captcha/commit/cc778002d34325f0fb40ff518ee664b200905504))
+* **us2:** OCR provider fallback chain + inline status badge ([bc62913](https://github.com/KevinNitroG/uit-student-captcha/commit/bc629134ae5e74d13755f16e349f76bb7adfad22))
+* **us3:** hosted config page + postMessage bridge; polish ([903191d](https://github.com/KevinNitroG/uit-student-captcha/commit/903191dea07ee20a6fe70ced56b771cb5819a9e5))
+* **view:** preserve user-typed captcha; only Retry overwrites ([876de94](https://github.com/KevinNitroG/uit-student-captcha/commit/876de94d3e8358c25aaf48cfe665c60dc2a69b92))
+
+
+### Bug Fixes
+
+* **bridge:** access GM via vite-plugin-monkey $ import; use unsafeWindow ([3d83a3a](https://github.com/KevinNitroG/uit-student-captcha/commit/3d83a3a6f963b0e81810d772a5cd740ffb107384))
+* idk we need to provide the pnpm exec while wrapping with nx cache action ([f925ebd](https://github.com/KevinNitroG/uit-student-captcha/commit/f925ebdbd68d281bcc384175608a27a26c6cbb0d))
+* mise alias nx ([70db9af](https://github.com/KevinNitroG/uit-student-captcha/commit/70db9afbc9c53b8a9a4168fb7ede448566739a7a))
+* **ocr:** EasyOCR is key-only (console endpoint); empty default chain ([a38e582](https://github.com/KevinNitroG/uit-student-captcha/commit/a38e5824df2ac512e0afb06e7e3b2a18c2bdb40d))
+* **ocr:** heal stale EasyOCR endpoint, default OCR.space engine 2, defer run ([0240383](https://github.com/KevinNitroG/uit-student-captcha/commit/0240383f7ee2fbaeafb823466958ef4b4671e4f2))
