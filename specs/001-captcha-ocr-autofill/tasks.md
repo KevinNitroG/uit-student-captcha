@@ -131,7 +131,9 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 
 - [X] T040 [P] Review userscript `@grant`/`@connect`/`@match` are minimal and complete (add `GM_openInTab` only if used) in `packages/uit-student-captcha/vite.config.ts` (Constitution V)
 - [X] T041 Run `pnpm exec nx run-many -t typecheck test build` and ensure it is green across both packages
-- [ ] T042 [P] Execute the manual scenarios in `specs/001-captcha-ocr-autofill/quickstart.md` (install built `.user.js`, run scenarios 1–7) and record results — ⚠ MANUAL: requires installing the built `.user.js` in Tampermonkey/Violentmonkey against the live portal; not executable in this headless environment. Automated coverage (45 unit tests) substitutes for scenarios 1–7 at the unit level.
+- [~] T042 [P] Execute the manual scenarios in `specs/001-captcha-ocr-autofill/quickstart.md` (install built `.user.js`, run scenarios 1–7) and record results.
+  - **Verified live (Chrome DevTools MCP)**: config page renders styled (Tailwind v4 + shadcn) with `DEFAULT_CONFIG` — EasyOCR (free) enabled primary, OCR.space disabled with the ⚠ required-key warning; **bridge round-trip** confirmed — an injected userscript-side `uoc:get`→`uoc:value` reply flips the indicator to "● Connected to userscript" and hydrates the posted config (timeout 9999, single provider). Covers SC-005 (config-page half) + FR-018/FR-021. No console errors (only a Brave React-DevTools shim warning + favicon 404).
+  - **Still pending (needs a userscript manager + the live portal — not installable in this headless env)**: scenarios 1–4 and 7 — portal autofill, provider fallback, no-form no-op, all-fail badge + Retry, and GM-storage persistence across reload. Covered at the unit level by the 45 co-located tests.
 - [X] T043 [P] Update `README.md` with install + configuration usage (menu command, providers, keys)
 
 ---
