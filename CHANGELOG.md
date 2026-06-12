@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.2](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.1.1...v1.1.2) (2026-06-12)
+
+
+### Continuous Integration
+
+* **release:** bypass Merge plugin so release PRs round-trip and cut tags ([bd74c45](https://github.com/KevinNitroG/uit-student-captcha/commit/bd74c45e3c10445b44429258bd7de64b2c9d315c))
+* **release:** force empty component so the merged PR round-trips to a v-tag ([4128024](https://github.com/KevinNitroG/uit-student-captcha/commit/412802420e1870f2c3503c56bfee116dbd3c3cba))
+* **release:** keep component in PR title but drop it from the tag ([c572f45](https://github.com/KevinNitroG/uit-student-captcha/commit/c572f45ae3d5ec07a10795e18d7ccdd92af935a9))
+* **release:** use canonical single-package config so one PR cuts one v-tag ([e6f7219](https://github.com/KevinNitroG/uit-student-captcha/commit/e6f7219093fd1247c0b9431f346cc66b88fd6621))
+
 ## [1.1.1](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.1.0...v1.1.1) (2026-06-12)
 
 
