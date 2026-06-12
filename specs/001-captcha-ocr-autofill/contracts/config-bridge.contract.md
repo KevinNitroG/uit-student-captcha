@@ -37,7 +37,7 @@ type BridgeMessage =
 1. SPA mounts → posts `{type:"uoc:get"}` to `window` (targetOrigin = own origin).
 2. Bridge (userscript) receives, reads GM storage, replies `{type:"uoc:value", payload}`.
 3. SPA edits + Save → posts `{type:"uoc:set", payload}`.
-4. Bridge validates (`config/validate.ts`); on success `GM_setValue` + reply
+4. Bridge validates (`config-core/src/validate.ts`); on success `GM_setValue` + reply
    `{type:"uoc:ack", ok:true}`; on failure `{type:"uoc:error", message}`.
 
 ### Security requirements (mandatory)
@@ -48,8 +48,11 @@ type BridgeMessage =
 ## Portal menu command (FR-020)
 
 `GM_registerMenuCommand("Configure OCR providers", () => GM_openInTab(CONFIG_PAGE_URL))`
-where `CONFIG_PAGE_URL = VITE_CONFIG_PAGE_ORIGIN + "configure.html"`.
-(`GM_openInTab` may require adding the grant; `window.open` is the fallback.)
+where `CONFIG_PAGE_URL = VITE_CONFIG_PAGE_ORIGIN + BASE + "configure.html"` (`BASE` = `/`
+dev, `/uit-student-captcha/` on Pages — must match the SPA's Vite `base`).
+The SPA build MUST actually emit `configure.html` (Vite's default entry is `index.html`,
+so configure the input/rename accordingly). `GM_registerMenuCommand` and `GM_openInTab`
+MUST be in the userscript `@grant` list (`window.open` is the fallback for the latter).
 
 ## Tests
 - jsdom: bridge ignores message from a foreign origin (no `GM_setValue`).

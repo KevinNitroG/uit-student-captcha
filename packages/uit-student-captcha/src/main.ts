@@ -1,23 +1,50 @@
-// Userscript entry point.
+// Userscript entry point. One bundle, two runtime modes (the script @matches both
+// origins):
+//   - on student.uit.edu.vn → detect the signin form and auto-fill the captcha;
+//   - on the hosted config page → bridge settings between the React SPA (postMessage)
+//     and the userscript's GM storage (User Story 3).
 //
-// One bundle, two runtime modes (the script @matches both origins):
-//   - on student.uit.edu.vn → detect the signin form and auto-fill the captcha
-//     using the configured OCR providers;
-//   - on the hosted GitHub Pages config page → bridge settings between the React
-//     SPA (via postMessage) and the userscript's GM storage.
-//
-// Full MVVM wiring (resolver registry, view-model, view) lands in the
-// implementation phase tracked under specs/001-captcha-ocr-autofill.
+// The config-page origin is inlined at bundle time from VITE_CONFIG_PAGE_ORIGIN
+// (research.md Decision 4); vite.config.ts injects the matching @match/@connect.
 
-const CONFIG_PAGE_URL_PREFIX =
-  "https://kevinnitrog.github.io/uit-student-captcha/";
+import {
+  DEFAULT_CONFIG,
+  STORAGE_KEY,
+  validateConfig,
+  type ProviderConfiguration,
+} from "uit-student-captcha-config-core";
+import { GmHttpClient } from "./model/http/HttpClient.ts";
+import { gmGetValue } from "./platform/gm.ts";
+import { CaptchaViewModel } from "./viewmodel/CaptchaViewModel.ts";
+import { PortalView } from "./view/PortalView.ts";
+
+const rawOrigin = import.meta.env["VITE_CONFIG_PAGE_ORIGIN"];
+const CONFIG_PAGE_ORIGIN = typeof rawOrigin === "string" ? rawOrigin : "http://localhost:3000";
+
+function loadConfig(): ProviderConfiguration {
+  const stored = gmGetValue(STORAGE_KEY, "");
+  if (!stored) return DEFAULT_CONFIG;
+  try {
+    return validateConfig(JSON.parse(stored));
+  } catch {
+    return DEFAULT_CONFIG;
+  }
+}
+
+function runPortalMode(): void {
+  const http = new GmHttpClient();
+  const viewModel = new CaptchaViewModel(loadConfig(), http);
+  const view = new PortalView(viewModel);
+  void view.run();
+}
 
 function bootstrap(): void {
-  if (window.location.href.startsWith(CONFIG_PAGE_URL_PREFIX)) {
-    // TODO(impl): config-bridge mode — relay postMessage <-> GM_getValue/GM_setValue.
+  const configOrigin = new URL(CONFIG_PAGE_ORIGIN).origin;
+  if (window.location.origin === configOrigin) {
+    // TODO(US3 / T039): config-bridge mode — relay postMessage <-> GM storage.
     return;
   }
-  // TODO(impl): captcha mode — detect signin form, run OCR chain, fill answer field.
+  runPortalMode();
 }
 
 bootstrap();

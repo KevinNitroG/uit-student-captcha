@@ -142,9 +142,12 @@ guaranteed and OCR of the PNG is the reliable path.)
 Notes:
 - There is **no in-page captcha-refresh button**; a new challenge comes only on full
   page reload — consistent with FR-016 (solve at load; "Retry OCR" re-reads current image).
-- The captcha image is a same-origin `student.uit.edu.vn` URL, so the View can fetch
-  its **bytes** via `GM_xmlhttpRequest` (needed for EasyOCR) and also pass the **URL**
-  directly to OCR.space.
+- The captcha image is a same-origin `student.uit.edu.vn` URL. For byte-based providers
+  (EasyOCR), the View obtains the **bytes** by drawing the already-loaded `<img>` to a
+  `<canvas>` (`toBlob`/`toDataURL`) — same-origin, so the canvas is untainted, and this
+  avoids a second request that could (in principle) return a different image. OCR.space
+  receives the **public URL** directly (the captcha URL is confirmed public/stable, not
+  session-bound — spec Clarification 2026-06-12).
 - The status badge / "Retry OCR" control mounts inside `.captcha` (or right after
   `.english-captcha-image`) so it sits directly beneath the captcha image (FR-015).
 - Hidden fields `captcha_sid` / `captcha_token` bind the challenge server-side; the

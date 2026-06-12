@@ -21,6 +21,8 @@
 
 - Q: How is configuration edited and stored? → A: The userscript registers a userscript-manager menu command that opens a dedicated hosted configuration page (a React SPA on GitHub Pages). The userscript also runs on that page and bridges the SPA's saved settings (via postMessage) into the userscript storage API, which is the source of truth read on the portal.
 - Q: What happens when the user hasn't configured anything yet? → A: On the portal, if required provider configuration is missing, the script shows a non-blocking notice beneath the captcha telling the user to open the configuration page via the menu command (rather than silently doing nothing); the no-key default provider still attempts recognition where possible.
+- Q: Is the captcha image URL public or session/cookie-bound? → A: Confirmed public and stable — the captcha PNG URL is fetchable by a third party without the user's session. OCR.space's URL input mode (its server fetching the image directly) is therefore valid.
+- Q: How does the script obtain the image bytes for byte-based providers (EasyOCR), and what is "Retry OCR" for? → A: Read bytes by drawing the already-loaded same-origin captcha `<img>` to a `<canvas>` (no re-fetch). The portal has no in-page captcha-refresh control, so "Retry OCR" re-runs the provider chain on the *same* currently-shown image — its purpose is recovering from transient provider failures (network/rate-limit/timeout), not fetching a new challenge.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -49,10 +51,12 @@ and the submit button remain untouched.
 2. **Given** the captcha answer field already contains text, **When** the script
    runs, **Then** it replaces the field contents with the freshly recognized text
    (so a stale or wrong value is corrected).
-3. **Given** the auto-fill produced a wrong value or the user manually refreshed the
-   captcha image, **When** the user clicks the "Retry OCR" control, **Then** the
-   script re-reads the captcha image currently shown and re-fills the answer field
-   (the script does not automatically watch the image for changes between loads).
+3. **Given** recognition failed due to a transient provider problem (network,
+   rate-limit, or timeout), **When** the user clicks the "Retry OCR" control, **Then**
+   the script re-runs the provider chain on the captcha image currently shown and fills
+   the answer field if a provider now succeeds (the portal has no in-page captcha
+   refresh, and the script does not automatically watch the image for changes between
+   loads; a genuinely new challenge requires a full page reload).
 
 ---
 
@@ -185,9 +189,11 @@ and are the ones used for recognition.
   re-reads the captcha image currently shown and re-runs the provider chain. Success
   MAY be indicated subtly or silently.
 - **FR-016**: The script MUST solve the captcha present at page load. It does NOT
-  automatically watch the captcha image for later refreshes; re-recognition for a
-  changed/refreshed image happens only when the user invokes the "Retry OCR" control
-  (FR-015) or reloads the page.
+  automatically watch the captcha image for later refreshes. The "Retry OCR" control
+  (FR-015) re-runs the provider chain on the *same* currently-shown image — its purpose
+  is recovering from transient provider failures, not fetching a new challenge; a
+  genuinely new challenge comes only from a full page reload (the portal has no in-page
+  captcha-refresh control).
 - **FR-017**: The script MUST bound each recognition attempt with a timeout and MUST
   avoid repeatedly re-solving the same already-solved challenge in a loop.
 - **FR-018**: Sensible typed defaults MUST allow a first-time user (no saved config)
@@ -245,6 +251,10 @@ and are the ones used for recognition.
   portal renders the captcha as a distorted-text PNG under
   `.../english_captcha/captcha_*.png` with a single adjacent answer input — the OCR
   output is typed into that one field.
+- **The captcha image URL is public and stable** (confirmed), not session/cookie-bound,
+  so a third-party OCR service may fetch it directly by URL. For byte-based providers the
+  script obtains the image by drawing the already-loaded same-origin `<img>` to a
+  `<canvas>` rather than issuing a second network request.
 - **Two OCR services are targeted initially**, as named by the user:
   - EasyOCR — `POST https://api.easyocr.org/ocr` (multipart `file`, no key required;
     returns recognized `words`), with the keyed `https://console.easyocr.org/api/ocr`

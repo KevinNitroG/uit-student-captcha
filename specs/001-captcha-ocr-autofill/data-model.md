@@ -130,7 +130,7 @@ export const DEFAULT_CONFIG: ProviderConfiguration = {
 };
 ```
 
-### Validation rules (`config/validate.ts`)
+### Validation rules (`config-core/src/validate.ts`)
 - Unknown/extra keys ignored; missing keys filled from `DEFAULT_CONFIG`.
 - `easyocr` + `variant:"keyed"` with empty `accessKey` → entry treated as misconfigured: skipped on the portal, flagged in the SPA (FR-013, FR-021).
 - `ocrspace` with empty `apiKey` → same (skipped/flagged).

@@ -105,8 +105,10 @@ portal). One instance only — guarded against duplicate injection (FR-017, edge
 ```
 
 ### Behavior
-- **Retry OCR** re-reads the *current* image element's `src`, re-fetches bytes, and
-  re-runs the whole provider chain from `idle` (FR-015/FR-016).
+- **Retry OCR** re-reads the *current* image element (drawing it to a `<canvas>` for
+  bytes; URL for OCR.space) and re-runs the whole provider chain from `idle`
+  (FR-015/FR-016). It targets recovery from transient provider failures — the portal has
+  no in-page captcha refresh, so the image itself is unchanged between retries.
 - The badge is **non-blocking**: it never overlays or disables the form; the user can
   always type the captcha manually.
 - Never touches username/password/submit; only writes `#edit-english-captcha-answer`

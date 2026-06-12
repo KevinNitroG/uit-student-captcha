@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG, isBridgeMessage } from "../src/index.ts";
+import { DEFAULT_CONFIG, isBridgeMessage } from "./index.ts";
 
 describe("DEFAULT_CONFIG", () => {
   it("makes the no-key EasyOCR provider the enabled primary", () => {

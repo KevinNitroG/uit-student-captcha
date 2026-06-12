@@ -33,9 +33,9 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 
 **Purpose**: Source skeleton and bundle-time wiring shared by all stories.
 
-- [ ] T001 Create the userscript MVVM source skeleton (empty dirs + barrel notes): `model/ocr/`, `model/config/`, `model/http/`, `viewmodel/`, `view/`, `bridge/`, `platform/` under `packages/uit-student-captcha/src/`
-- [ ] T002 Make the userscript header env-driven: read `VITE_CONFIG_PAGE_ORIGIN` via `loadEnv()` and inject the origin into `@match` and `@connect` (default `http://localhost:3000`) in `packages/uit-student-captcha/vite.config.ts` (per research.md Decision 4)
-- [ ] T003 [P] Add test helpers — fake `GM_*` (getValue/setValue/registerMenuCommand/xmlhttpRequest) and a fake `HttpClient` factory — in `packages/uit-student-captcha/test/helpers/mocks.ts`
+- [X] T001 Create the userscript MVVM source skeleton (empty dirs + barrel notes): `model/ocr/`, `model/config/`, `model/http/`, `viewmodel/`, `view/`, `bridge/`, `platform/` under `packages/uit-student-captcha/src/`
+- [X] T002 Make the userscript header env-driven: read `VITE_CONFIG_PAGE_ORIGIN` via `loadEnv()` and inject the origin into `@match` and `@connect` (default `http://localhost:3000`) in `packages/uit-student-captcha/vite.config.ts` (per research.md Decision 4)
+- [X] T003 [P] Add test helpers — fake `GM_*` (getValue/setValue/registerMenuCommand/xmlhttpRequest) and a fake `HttpClient` factory — in `packages/uit-student-captcha/test/helpers/mocks.ts`
 
 ---
 
@@ -46,13 +46,13 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
 - [X] T007 [P] Define `ProviderConfiguration` + `ProviderEntry` union + `DEFAULT_CONFIG` (EasyOCR-free enabled, OCR.space disabled) + `BridgeMessage`/`STORAGE_KEY` — **done** in `packages/uit-student-captcha-config-core/src/{schema,bridge,index}.ts` (data-model.md §3/§5)
-- [ ] T004 [P] Define `OcrResolver` interface + `OcrInput`/`OcrResult` types in `packages/uit-student-captcha/src/model/ocr/OcrResolver.ts` (per contracts/ocr-resolver.contract.md, data-model.md §1)
-- [ ] T005 [P] Define `OcrError` class + `OcrErrorCode` union in `packages/uit-student-captcha/src/model/ocr/errors.ts` (data-model.md §2)
-- [ ] T006 [P] Implement `normalizeCaptchaText()` (strip to `[A-Za-z0-9]`, pick single longest token; empty → signal failure) in `packages/uit-student-captcha/src/model/ocr/normalize.ts` (FR-010)
-- [ ] T008 [P] Implement typed `GM` shims (`getValue`/`setValue`/`registerMenuCommand`/`xmlhttpRequest`, narrowed at the boundary) in `packages/uit-student-captcha/src/platform/gm.ts`
-- [ ] T009 Implement `validateConfig(raw): ProviderConfiguration` (fill defaults, clamp `ocrEngine`/`timeoutMs`, flag missing keys, drop disabled from runtime chain) in **`packages/uit-student-captcha-config-core/src/validate.ts`** + export from `index.ts` (depends on T007)
-- [ ] T010 Implement `HttpClient` seam + `GmHttpClient` over `GM_xmlhttpRequest` (timeout → `OcrError(TIMEOUT)`, transport failure → `OcrError(NETWORK)`) in `packages/uit-student-captcha/src/model/http/HttpClient.ts` (depends on T005, T008; contracts/ocr-resolver.contract.md)
-- [ ] T011 [P] Unit tests for `normalizeCaptchaText` (userscript) and `validateConfig` (in `packages/uit-student-captcha-config-core/test/validate.spec.ts`; `DEFAULT_CONFIG`/`isBridgeMessage` already covered by `config-core/test/schema.spec.ts`) (depends on T006, T009)
+- [X] T004 [P] Define `OcrResolver` interface + `OcrInput`/`OcrResult` types in `packages/uit-student-captcha/src/model/ocr/OcrResolver.ts` (per contracts/ocr-resolver.contract.md, data-model.md §1)
+- [X] T005 [P] Define `OcrError` class + `OcrErrorCode` union in `packages/uit-student-captcha/src/model/ocr/errors.ts` (data-model.md §2)
+- [X] T006 [P] Implement `normalizeCaptchaText()` (strip to `[A-Za-z0-9]`, pick single longest token; empty → signal failure) in `packages/uit-student-captcha/src/model/ocr/normalize.ts` (FR-010)
+- [X] T008 [P] Implement typed `GM` shims (`getValue`/`setValue`/`registerMenuCommand`/`xmlhttpRequest`, narrowed at the boundary) in `packages/uit-student-captcha/src/platform/gm.ts`
+- [X] T009 Implement `validateConfig(raw): ProviderConfiguration` (fill defaults, clamp `ocrEngine`/`timeoutMs`, flag missing keys, drop disabled from runtime chain) in **`packages/uit-student-captcha-config-core/src/validate.ts`** + export from `index.ts` (depends on T007)
+- [X] T010 Implement `HttpClient` seam + `GmHttpClient` over `GM_xmlhttpRequest` (timeout → `OcrError(TIMEOUT)`, transport failure → `OcrError(NETWORK)`) in `packages/uit-student-captcha/src/model/http/HttpClient.ts` (depends on T005, T008; contracts/ocr-resolver.contract.md)
+- [X] T011 [P] Unit tests for `normalizeCaptchaText` (userscript), `validateConfig` (in `packages/uit-student-captcha-config-core/test/validate.spec.ts`; `DEFAULT_CONFIG`/`isBridgeMessage` already covered by `config-core/test/schema.spec.ts`), and `GmHttpClient` error mapping (timeout → `OcrError(TIMEOUT)`, transport failure → `OcrError(NETWORK)`) using the fake `GM_xmlhttpRequest` from T003, in `packages/uit-student-captcha/test/HttpClient.spec.ts` (covers SC-007) (depends on T006, T009, T010)
 
 **Checkpoint**: Contracts, config, and transport are ready — stories can begin.
 
@@ -66,14 +66,14 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Implement `EasyOcrResolver` (free + keyed variants; multipart `file` bytes; `X-Access-Key` when keyed; map `words[]`/`text` → normalized result; HTTP-status error mapping) in `packages/uit-student-captcha/src/model/ocr/EasyOcrResolver.ts` (contracts/easyocr.contract.md)
-- [ ] T013 [P] [US1] `EasyOcrResolver` tests — free 200 `{words}` → token; keyed missing `accessKey` → `MISSING_CONFIG`; 429 → `RATE_LIMIT`; `{words:[]}` → `EMPTY_RESULT` (fake HttpClient) in `packages/uit-student-captcha/test/EasyOcrResolver.spec.ts`
-- [ ] T014 [US1] Implement `createResolver(entry, http)` registry with the `easyocr` case — the only provider switch — in `packages/uit-student-captcha/src/model/ocr/registry.ts` (depends on T012; Constitution II)
-- [ ] T015 [US1] Implement `CaptchaViewModel` — load+validate config, build `ocrResolvers[]` via registry, hold `imageUrl`/`imageBytes`, run the provider chain (single attempt each, normalize), expose `CaptchaStatus` — in `packages/uit-student-captcha/src/viewmodel/CaptchaViewModel.ts` (depends on T010, T014; data-model.md §4)
-- [ ] T016 [P] [US1] `CaptchaViewModel` happy-path tests — single mocked resolver → `solved` with normalized text — in `packages/uit-student-captcha/test/CaptchaViewModel.us1.spec.ts`
-- [ ] T017 [US1] Implement `PortalView` — detect `#user-login-form`, read `.english-captcha-image img`, fetch bytes via `HttpClient`, fill `#edit-english-captcha-answer` (set value + dispatch `input`/`change`), guard every access — in `packages/uit-student-captcha/src/view/PortalView.ts` (research.md Decision 7; FR-002/003/008/009)
-- [ ] T018 [P] [US1] `PortalView` jsdom tests — fills only the answer input; absent form → no-op + console log; never writes `#edit-name`/`#edit-pass`/`#edit-submit--2` — in `packages/uit-student-captcha/test/PortalView.spec.ts`
-- [ ] T019 [US1] Wire portal mode in `packages/uit-student-captcha/src/main.ts` — at `document-idle`, construct `GmHttpClient` + `CaptchaViewModel` + `PortalView`, run once with a solved-guard (FR-016/FR-017)
+- [X] T012 [P] [US1] Implement `EasyOcrResolver` (free + keyed variants; multipart `file` bytes; `X-Access-Key` when keyed; map `words[]`/`text` → normalized result; HTTP-status error mapping) in `packages/uit-student-captcha/src/model/ocr/EasyOcrResolver.ts` (contracts/easyocr.contract.md)
+- [X] T013 [P] [US1] `EasyOcrResolver` tests — free 200 `{words}` → token; keyed missing `accessKey` → `MISSING_CONFIG`; 429 → `RATE_LIMIT`; `{words:[]}` → `EMPTY_RESULT` (fake HttpClient) in `packages/uit-student-captcha/test/EasyOcrResolver.spec.ts`
+- [X] T014 [US1] Implement `createResolver(entry, http)` registry with the `easyocr` case — the only provider switch — in `packages/uit-student-captcha/src/model/ocr/registry.ts` (depends on T012; Constitution II)
+- [X] T015 [US1] Implement `CaptchaViewModel` — load+validate config, build `ocrResolvers[]` via registry, hold `imageUrl`/`imageBytes`, run the provider chain (single attempt each, normalize), expose `CaptchaStatus` — in `packages/uit-student-captcha/src/viewmodel/CaptchaViewModel.ts` (depends on T010, T014; data-model.md §4)
+- [X] T016 [P] [US1] `CaptchaViewModel` happy-path tests — single mocked resolver → `solved` with normalized text — in `packages/uit-student-captcha/test/CaptchaViewModel.us1.spec.ts`
+- [X] T017 [US1] Implement `PortalView` — detect `#user-login-form`, read `.english-captcha-image img`, obtain bytes by drawing the loaded same-origin `<img>` to a `<canvas>` (`toBlob`/`toDataURL`; no re-fetch) and keep its public `src` as `imageUrl`, fill `#edit-english-captcha-answer` (set value + dispatch `input`/`change`), guard every access — in `packages/uit-student-captcha/src/view/PortalView.ts` (research.md Decision 7; FR-002/003/008/009)
+- [X] T018 [P] [US1] `PortalView` jsdom tests — fills only the answer input; absent form → no-op + console log; never writes `#edit-name`/`#edit-pass`/`#edit-submit--2` — in `packages/uit-student-captcha/test/PortalView.spec.ts`
+- [X] T019 [US1] Wire portal mode in `packages/uit-student-captcha/src/main.ts` — at `document-idle`, construct `GmHttpClient` + `CaptchaViewModel` + `PortalView`, run once with a solved-guard (FR-016/FR-017)
 
 **Checkpoint**: MVP — captcha auto-fills via EasyOCR free with zero user action.
 
@@ -87,14 +87,14 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Implement `OcrSpaceResolver` (http/https, GET/POST, `OCREngine` 1–3, `url`/`base64`/`file` input, default POST+url; map `ParsedResults[0].ParsedText`; in-body `OCRExitCode`/`IsErroredOnProcessing` + HTTP error mapping) in `packages/uit-student-captcha/src/model/ocr/OcrSpaceResolver.ts` (contracts/ocrspace.contract.md)
+- [X] T020 [P] [US2] Implement `OcrSpaceResolver` (http/https, GET/POST, `OCREngine` 1–3, `url`/`base64`/`file` input, default POST+url; map `ParsedResults[0].ParsedText`; in-body `OCRExitCode`/`IsErroredOnProcessing` + HTTP error mapping) in `packages/uit-student-captcha/src/model/ocr/OcrSpaceResolver.ts` (contracts/ocrspace.contract.md)
 - [ ] T021 [P] [US2] `OcrSpaceResolver` tests — POST+url `OCRExitCode:1` → token; empty `apiKey` → `MISSING_CONFIG`; `IsErroredOnProcessing` invalid-key → `AUTH`; `ParsedText:" "` → `EMPTY_RESULT` — in `packages/uit-student-captcha/test/OcrSpaceResolver.spec.ts`
-- [ ] T022 [US2] Extend `createResolver` with the `ocrspace` case in `packages/uit-student-captcha/src/model/ocr/registry.ts` (depends on T020)
+- [X] T022 [US2] Extend `createResolver` with the `ocrspace` case in `packages/uit-student-captcha/src/model/ocr/registry.ts` (depends on T020)
 - [ ] T023 [US2] Harden `CaptchaViewModel` chain — iterate enabled providers in order, one attempt each bounded by `timeoutMs`, skip misconfigured, all-fail → `failed` (carry last error + attempts), empty chain → `missing-config`, no same-provider retry — in `packages/uit-student-captcha/src/viewmodel/CaptchaViewModel.ts` (FR-007/014/021)
 - [ ] T024 [P] [US2] `CaptchaViewModel` chain tests — primary fail → fallback success; all fail → `failed`; empty chain → `missing-config`; timeout triggers fallback; solved-guard prevents re-solve loop — in `packages/uit-student-captcha/test/CaptchaViewModel.us2.spec.ts`
 - [ ] T025 [US2] Implement `statusBadge` — mount beneath `.english-captcha-image` inside `.captcha`; render `loading`/`solved`/`missing-config`/`failed` (red badge + "Retry OCR" control); idempotent single mount — in `packages/uit-student-captcha/src/view/statusBadge.ts` (contracts/config-ui.contract.md §B; FR-015)
 - [ ] T026 [P] [US2] `statusBadge` jsdom tests — `failed` renders badge + Retry that re-invokes the chain; `missing-config` shows the config-page link; running twice yields one badge — in `packages/uit-student-captcha/test/statusBadge.spec.ts`
-- [ ] T027 [US2] Wire the badge + Retry handler into `PortalView`/`main.ts` — Retry re-reads the current image `src`, re-fetches bytes, re-runs the chain from `idle` — in `packages/uit-student-captcha/src/view/PortalView.ts`
+- [ ] T027 [US2] Wire the badge + Retry handler into `PortalView`/`main.ts` — Retry re-reads the current image (canvas→bytes; `src`→URL) and re-runs the chain from `idle` (targets transient-failure recovery; image is unchanged between retries) — in `packages/uit-student-captcha/src/view/PortalView.ts`
 
 **Checkpoint**: Two providers with automatic fallback and a graceful, non-blocking failure UX.
 
@@ -119,7 +119,7 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 - [ ] T036 [P] [US3] Config-page jsdom tests — `uoc:get` round-trip renders config; Save posts `uoc:set` and shows ack; invalid payload shows error; empty required key shows ⚠ — in `packages/uit-student-captcha-config-page/test/App.spec.tsx`
 - [ ] T037 [US3] Implement `configBridge` (userscript side) — verify `event.origin`/`event.source`, `isBridgeMessage` guard, handle `uoc:get`/`uoc:set` against GM storage at `STORAGE_KEY`, `validateConfig` before persist, reply `uoc:value`/`uoc:ack`/`uoc:error` (all from config-core) — in `packages/uit-student-captcha/src/bridge/configBridge.ts` (depends on T009; contracts/config-bridge.contract.md)
 - [ ] T038 [P] [US3] `configBridge` jsdom tests — foreign origin ignored (no `GM_setValue`); valid `uoc:set` persists + acks; invalid payload → `uoc:error` — in `packages/uit-student-captcha/test/configBridge.spec.ts`
-- [ ] T039 [US3] Wire config-page mode in `packages/uit-student-captcha/src/main.ts` — route on the config-page origin to `configBridge`, and register the `GM_registerMenuCommand` that opens `${VITE_CONFIG_PAGE_ORIGIN}${BASE}configure.html` on the portal (FR-011/FR-020)
+- [ ] T039 [US3] Wire config-page mode in `packages/uit-student-captcha/src/main.ts` — route on the config-page origin to `configBridge`, and register the `GM_registerMenuCommand` that opens `${VITE_CONFIG_PAGE_ORIGIN}${BASE}configure.html` on the portal (FR-011/FR-020). Confirm `GM_registerMenuCommand` + `GM_openInTab` are in the `@grant` list (add them in `vite.config.ts` if missing — do not defer to T040) and that the config-page build emits `configure.html` (not just `index.html`)
 
 **Checkpoint**: Settings edited on the hosted page persist into GM storage and drive recognition.
 
