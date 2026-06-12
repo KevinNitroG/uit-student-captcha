@@ -1,13 +1,12 @@
 {
   "name": "uit-student-captcha-source",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "build": "nx run-many -t build",
     "test": "nx run-many -t test",
-    "typecheck": "nx run-many -t typecheck",
-    "release": "nx release"
+    "typecheck": "nx run-many -t typecheck"
   },
   "devDependencies": {
     "@nx/js": "catalog:",

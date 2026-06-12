@@ -118,7 +118,7 @@ pnpm exec nx build uit-student-captcha              # build just the userscript
 pnpm exec nx serve uit-student-captcha-config-page  # run the config page locally
 ```
 
-The built userscript is at `packages/uit-student-captcha/dist/uit-student-captcha.user.js`
+The built userscript is at `dist/uit-student-captcha/uit-student-captcha.user.js`
 — load it into your userscript manager for manual testing.
 
 ### Config-page origin
@@ -139,7 +139,10 @@ pnpm exec nx run-many -t typecheck  # TypeScript type checking (tsgo)
 
 ### Releases
 
-Versioning is driven by **Nx Release** (Conventional Commits, single fixed group).
-Releases are triggered manually from the **CI** workflow (`workflow_dispatch` →
-`release: true`), which versions, builds, creates the GitHub Release, attaches the
-`.user.js` asset, and deploys the config page to GitHub Pages.
+Versioning is driven by **[release-please](https://github.com/googleapis/release-please)**
+(Conventional Commits, single fixed group — both packages share one version and one
+`v{version}` tag). On every push to `main` it maintains a **Release PR** that bumps the
+version (committed into `package.json` so Vite bakes it into the userscript header) and
+updates `CHANGELOG.md`. **Merging that PR** cuts the git tag and GitHub Release; the
+`publish` CI job then builds, attaches the `.user.js` asset to the release, and deploys
+the config page to GitHub Pages — all in one run.

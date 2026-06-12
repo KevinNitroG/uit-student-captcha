@@ -2,9 +2,10 @@ import { defineConfig, loadEnv } from "vite";
 import monkey from "vite-plugin-monkey";
 import pkg from "./package.json" with { type: "json" };
 
-// Versions live in git tags (Nx Release). `nx release` writes the resolved version
-// into package.json right before the build, so the released userscript header is
-// correct; in local dev the field is absent, so fall back to 0.0.0.
+// Versioning is driven by release-please (Conventional Commits). It commits the
+// resolved version into this package.json (mirrored from the root via the config's
+// `extra-files`), so the released userscript header is baked from disk here. The
+// `?? "0.0.0"` is a defensive fallback only — the field is normally present.
 const version = (pkg as { version?: string }).version ?? "0.0.0";
 
 // The config-page origin is resolved at bundle time (research.md Decision 4). This
@@ -27,6 +28,12 @@ export default defineConfig(({ mode }) => {
   const configHost = new URL(configOrigin).hostname;
 
   return {
+    // Emit to the workspace-root dist so all built artifacts collect under one tree
+    // ({workspaceRoot}/dist/{projectName}) — convenient for CI release uploads.
+    build: {
+      outDir: "../../dist/uit-student-captcha",
+      emptyOutDir: true,
+    },
     plugins: [
       monkey({
         entry: "src/main.ts",

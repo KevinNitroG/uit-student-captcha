@@ -6,11 +6,6 @@ on:
       - main
   pull_request:
   workflow_dispatch:
-    inputs:
-      release:
-        description: "Run Nx Release (version, changelog, tag, GitHub release, upload userscript asset)"
-        type: boolean
-        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -23,12 +18,16 @@ concurrency:
 # pin the deployed GitHub Pages origin so the released artifacts target production.
 env:
   VITE_CONFIG_PAGE_ORIGIN: https://kevinnitrog.github.io/uit-student-captcha
+  MISE_OVERRIDE_CONFIG_FILENAMES: .mise.ci.toml
 
 jobs:
   check:
     name: Typecheck · Test · Build
     runs-on: ubuntu-latest
     steps:
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v4
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -45,28 +44,73 @@ jobs:
           node-version-file: .tool-versions
           cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
+      - name: Setup Mise
+        uses: jdx/mise-action@v4
+        with:
+          experimental: true
+          cache: true
+
+      - name: Derive SHAs for Nx Affected
+        id: set-shas
+        uses: nrwl/nx-set-shas@v5
+
+      - run: pnpm install
 
       - name: Typecheck, test, and build all projects
-        run: pnpm exec nx run-many -t typecheck test build
+        run: |
+          nx-cache-action -- \
+          nx run-many \
+          -t typecheck \
+          -t test \
+          -t build
 
-  release:
-    name: Release (Nx Release) + Deploy Config Page
+  # release-please maintains a single "Release PR" off main, driven by Conventional
+  # Commits. Both packages share ONE version and ONE `v{version}` tag (root component,
+  # `include-component-in-tag: false`); the resolved version is committed into the root
+  # and userscript package.json (via the config's `extra-files`) so Vite can bake it
+  # into the userscript header. Merging the Release PR is what cuts the tag + GitHub
+  # Release; `release_created` then gates the publish job below.
+  release-please:
+    name: Release Please
     needs: check
-    # Manual, opt-in: trigger from the Actions tab with the "release" input checked.
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.release }}
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
-      contents: write # create release, push tag/commit
+      contents: write # create release + tag, push the release PR branch
+      pull-requests: write # open/update the Release PR
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # Runs only on the push that merges the Release PR (release_created == true). At that
+  # point main HEAD already carries the bumped version in package.json, so the build
+  # bakes the correct userscript header. We attach the .user.js to the freshly created
+  # release and deploy the config page to GitHub Pages in the same job (a release made
+  # with GITHUB_TOKEN does not fire the `release` event, so we chain the deploy inline).
+  publish:
+    name: Publish Asset · Deploy Config Page
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # upload the userscript release asset
       pages: write # deploy config page to GitHub Pages
       id-token: write # OIDC for actions/deploy-pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v4
+
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -80,64 +124,36 @@ jobs:
           node-version-file: .tool-versions
           cache: pnpm
 
+      - name: Setup Mise
+        uses: jdx/mise-action@v4
+        with:
+          experimental: true
+          cache: true
+
       - run: pnpm install --frozen-lockfile
 
-      - name: Configure git identity
+      # Both projects emit to {workspaceRoot}/dist/{projectName} (see vite.config.ts):
+      #   dist/uit-student-captcha/uit-student-captcha.user.js  — the userscript asset
+      #   dist/uit-student-captcha-config-page/                 — the config page
+      - name: Build with the released version baked in
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      # Fixed/locked release group: both packages share one version + tag (v{version}).
-      # The version is bumped from Conventional Commits FIRST so the build can bake it
-      # into the userscript header. Every subsequent step is GATED on a version having
-      # actually been produced: if there are no releasable commits, Nx writes no version
-      # (package.json has no static version field — versions live in git tags), so we
-      # detect that, skip the rest, and the job is a clean no-op.
-      - name: Version (Conventional Commits)
-        id: version
-        run: |
-          pnpm exec nx release version --yes
-          VERSION="$(node -p "require('./packages/uit-student-captcha/package.json').version || ''")"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          if [ -z "$VERSION" ]; then
-            echo "::notice::No releasable changes detected — nothing to release."
-          else
-            echo "::notice::Releasing v$VERSION"
-          fi
-
-      - name: Build with the new version baked in
-        if: steps.version.outputs.version != ''
-        run: pnpm exec nx run-many -t build
-
-      - name: Changelog, tag, push, and GitHub release
-        if: steps.version.outputs.version != ''
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm exec nx release changelog "${{ steps.version.outputs.version }}" --yes
+          nx-cache-action -- \
+          nx run-many -t build
 
       - name: Attach userscript asset to the release
-        if: steps.version.outputs.version != ''
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload "v${{ steps.version.outputs.version }}" \
-            packages/uit-student-captcha/dist/uit-student-captcha.user.js --clobber
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          files: dist/uit-student-captcha/uit-student-captcha.user.js
 
-      # Deploy the config page to GitHub Pages as part of the release (a release
-      # created with GITHUB_TOKEN does not fire the `release` event, so we deploy
-      # inline here rather than from a separate event-triggered workflow). The config
-      # page was already produced by the "Build" step above (nx run-many -t build).
       - name: Configure GitHub Pages
-        if: steps.version.outputs.version != ''
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
-        if: steps.version.outputs.version != ''
         uses: actions/upload-pages-artifact@v3
         with:
-          path: packages/uit-student-captcha-config-page/dist
+          path: dist/uit-student-captcha-config-page
 
       - name: Deploy to GitHub Pages
         id: deployment
-        if: steps.version.outputs.version != ''
         uses: actions/deploy-pages@v4

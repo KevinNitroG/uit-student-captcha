@@ -28,7 +28,9 @@ export default defineConfig(({ mode }) => {
     server: { port: 3000 },
     preview: { port: 3000 },
     build: {
-      outDir: "dist",
+      // Emit to the workspace-root dist ({workspaceRoot}/dist/{projectName}) so all
+      // built artifacts collect under one tree — convenient for CI deploy/upload.
+      outDir: "../../dist/uit-student-captcha-config-page",
       emptyOutDir: true,
       rollupOptions: {
         input: { configure: "configure.html" },

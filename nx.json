@@ -70,35 +70,5 @@
       }
     }
   ],
-  "release": {
-    "projects": [
-      "uit-student-captcha",
-      "uit-student-captcha-config-page"
-    ],
-    "projectsRelationship": "fixed",
-    "releaseTagPattern": "v{version}",
-    "version": {
-      "conventionalCommits": true,
-      "fallbackCurrentVersionResolver": "disk",
-      "git": {
-        "commit": false,
-        "tag": false,
-        "stageChanges": true
-      }
-    },
-    "changelog": {
-      "automaticFromRef": true,
-      "workspaceChangelog": {
-        "createRelease": "github"
-      },
-      "projectChangelogs": false,
-      "git": {
-        "commit": true,
-        "tag": true,
-        "push": true,
-        "commitMessage": "chore(release): publish v{version} [skip ci]"
-      }
-    }
-  },
   "analytics": false
 }
