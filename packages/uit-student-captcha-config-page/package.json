@@ -1,5 +1,6 @@
 {
   "name": "uit-student-captcha-config-page",
+  "version": "1.1.2",
   "private": true,
   "type": "module",
   "description": "Hosted React SPA for configuring the UIT Student Captcha userscript's OCR providers.",

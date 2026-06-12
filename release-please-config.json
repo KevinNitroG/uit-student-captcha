@@ -4,12 +4,21 @@
   "include-component-in-tag": false,
   "packages": {
     ".": {
-      "component": "",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         {
           "type": "json",
           "path": "packages/uit-student-captcha/package.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "packages/uit-student-captcha-config-core/package.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "packages/uit-student-captcha-config-page/package.json",
           "jsonpath": "$.version"
         }
       ]
