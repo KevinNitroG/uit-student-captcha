@@ -31,7 +31,9 @@ pnpm exec nx serve uit-student-captcha-config-page  # run the config page locall
 ## Usage
 
 1. Open the [UIT student portal](https://student.uit.edu.vn/). When the sign-in form
-   with a captcha is present, the captcha field is filled automatically.
+   with a captcha is present, the captcha field is filled automatically. If you've
+   already started typing the captcha yourself, the script leaves your input alone and
+   skips OCR — only the **↻ Retry OCR** button overwrites a value you've entered.
 2. Configure your OCR providers from the userscript-manager menu → **Configure OCR
    providers**, which opens the hosted
    [config page](https://kevinnitrog.github.io/uit-student-captcha/configure.html).

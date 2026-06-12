@@ -71,11 +71,17 @@ export class PortalView {
       console.info(`${LOG_PREFIX} no signin form on this page; nothing to do.`);
       return null;
     }
+    // If the user already typed a captcha, leave it alone — don't read or overwrite
+    // (FR-008): only an explicit Retry overrides a pre-filled answer.
+    if (context.answerInput.value.trim() !== "") {
+      console.info(`${LOG_PREFIX} captcha answer already filled by the user; skipping OCR.`);
+      return null;
+    }
     return this.solveInto(context);
   }
 
   /** Read the current image into the ViewModel, solve, and render (also used by Retry). */
-  async solveInto(context: SigninFormContext): Promise<CaptchaStatus> {
+  async solveInto(context: SigninFormContext, options: { force?: boolean } = {}): Promise<CaptchaStatus> {
     this.context = context;
     // Re-render the badge on each transition so "Reading…" shows during the chain.
     this.viewModel.onStatusChange = (status) => this.badge.render(context.captchaImage, status);
@@ -94,7 +100,7 @@ export class PortalView {
 
     // Final render (covers the solved-guard short-circuit, which fires no transition).
     this.badge.render(context.captchaImage, status);
-    if (status.kind === "solved") this.fillAnswer(context, status.result.text);
+    if (status.kind === "solved") this.fillAnswer(context, status.result.text, options.force ?? false);
     return status;
   }
 
@@ -102,12 +108,19 @@ export class PortalView {
   private retry(): void {
     if (!this.context) return;
     this.viewModel.reset();
-    void this.solveInto(this.context);
+    // Retry is an explicit user action, so it overwrites whatever is in the field.
+    void this.solveInto(this.context, { force: true });
   }
 
   /** Write ONLY the answer field and notify Drupal via input/change events (FR-008). */
-  private fillAnswer(context: SigninFormContext, text: string): void {
+  private fillAnswer(context: SigninFormContext, text: string, force: boolean): void {
     const input = context.answerInput;
+    // Guard against text typed during the (async) solve: don't clobber the user's input
+    // unless this is an explicit Retry.
+    if (!force && input.value.trim() !== "") {
+      console.info(`${LOG_PREFIX} captcha answer typed during OCR; keeping the user's value.`);
+      return;
+    }
     input.value = text;
     input.dispatchEvent(new Event("input", { bubbles: true }));
     input.dispatchEvent(new Event("change", { bubbles: true }));

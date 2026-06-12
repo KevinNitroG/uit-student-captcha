@@ -66,6 +66,23 @@ describe("PortalView", () => {
     expect(onInput).toHaveBeenCalledOnce();
   });
 
+  it("leaves a user-typed answer untouched and skips OCR", async () => {
+    renderSigninForm();
+    const answer = document.querySelector("#edit-english-captcha-answer") as HTMLInputElement;
+    answer.value = "mine";
+    const resolve = vi.fn();
+    const stub: OcrResolver = { id: "stub", resolve };
+    const view = new PortalView(new CaptchaViewModel(oneProvider, http, () => stub), {
+      extractBytes: () => Promise.resolve(new Blob(["x"])),
+    });
+
+    const status = await view.run();
+
+    expect(status).toBeNull();
+    expect(resolve).not.toHaveBeenCalled();
+    expect(answer.value).toBe("mine");
+  });
+
   it("is a no-op with one info log when no signin form is present", async () => {
     document.body.innerHTML = `<div>not a login page</div>`;
     const info = vi.spyOn(console, "info").mockImplementation(() => {});

@@ -112,10 +112,14 @@ portal). One instance only — guarded against duplicate injection (FR-017, edge
   always type the captcha manually.
 - Never touches username/password/submit; only writes `#edit-english-captcha-answer`
   and dispatches `input`/`change` so Drupal accepts the value (FR-008).
+- **Never overwrites a user-typed answer**: if the field is already non-empty the
+  initial run skips OCR; a value typed while OCR is in flight is preserved (the result
+  is dropped). Only an explicit **↻ Retry OCR** overwrites a pre-filled field.
 - All DOM access guarded; a missing mount point logs and skips rather than throwing.
 
 ### Tests (jsdom)
 - Renders `failed` badge + working Retry that re-invokes the ViewModel chain.
 - Renders `missing-config` notice with a link to the config-page URL.
 - `solved` writes only the answer input; username/password/submit untouched.
+- A pre-filled answer input is left untouched and OCR is skipped; Retry still overwrites.
 - Idempotent mount: running twice yields a single badge.

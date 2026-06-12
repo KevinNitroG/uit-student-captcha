@@ -48,7 +48,8 @@ Install the built `.user.js` in your userscript manager, then:
 | 4 | All providers fail | One inline non-blocking error badge beneath the captcha + working "Retry OCR"; page stays usable | SC-006 |
 | 5 | Open menu command → config page, set order + key, Save, reopen | Values persisted (GM storage) and shown on reopen; used on next portal load | SC-005 |
 | 6 | First run, no config saved | No provider configured (default is empty); portal shows the "open configuration" notice; config page starts empty with "+ Add provider" | FR-018, FR-021 |
-| 7 | Wrong fill, click "Retry OCR" | Current captcha image re-read and re-filled | FR-015/FR-016 |
+| 7 | Wrong fill, click "Retry OCR" | Current captcha image re-read and re-filled (overwrites the field) | FR-015/FR-016 |
+| 8 | Type the captcha yourself, then load/reload | Your text is kept; OCR is skipped and the field is never overwritten | FR-008, Scenario 2 |
 
 ## Automated coverage (must pass before done)
 
@@ -56,8 +57,9 @@ Install the built `.user.js` in your userscript manager, then:
   `OcrErrorCode`), and missing-config (per contracts) using a fake `HttpClient`.
 - ViewModel: fallback chain (primary fail → fallback success), all-fail → `failed`
   status, empty chain → `missing-config`, solved-guard prevents re-solve loop.
-- View (jsdom): detects/ignores absent form, fills only the answer input, renders
-  badge + Retry, never touches username/password/submit.
+- View (jsdom): detects/ignores absent form, fills only the answer input, never
+  overwrites a user-typed answer (skips OCR when pre-filled), renders badge + Retry,
+  never touches username/password/submit.
 - Bridge (jsdom): origin/source checks, persist + ack, invalid payload → error.
 
 ## Done checklist

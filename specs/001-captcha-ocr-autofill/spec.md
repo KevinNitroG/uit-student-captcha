@@ -48,9 +48,10 @@ and the submit button remain untouched.
    **When** the page finishes loading, **Then** the captcha answer field is filled
    with the text returned by the OCR service and the username, password, and
    submit controls are not modified.
-2. **Given** the captcha answer field already contains text, **When** the script
-   runs, **Then** it replaces the field contents with the freshly recognized text
-   (so a stale or wrong value is corrected).
+2. **Given** the captcha answer field already contains text (the user is typing it
+   themselves), **When** the script runs, **Then** it leaves the field untouched and
+   skips OCR, so the user's own input is never overwritten. Only an explicit "Retry
+   OCR" click overwrites a pre-filled value.
 3. **Given** recognition failed due to a transient provider problem (network,
    rate-limit, or timeout), **When** the user clicks the "Retry OCR" control, **Then**
    the script re-runs the provider chain on the captcha image currently shown and fills
@@ -164,7 +165,11 @@ and are the ones used for recognition.
   configured provider exactly once. Each provider gets a single attempt per challenge
   (primary once, then fallback once); the script MUST NOT auto-retry the same provider.
 - **FR-008**: The script MUST write the recognized text into the captcha answer
-  field, replacing any existing value, in a way the host page accepts as user input.
+  field in a way the host page accepts as user input, but MUST NOT overwrite a value
+  the user has already typed: if the answer field is non-empty when the script runs it
+  skips OCR entirely, and if the user types into the field while OCR is in flight the
+  result is discarded rather than clobbering their input. Only an explicit "Retry OCR"
+  action (FR-015) overwrites a pre-filled value.
 - **FR-009**: The script MUST NOT fill the username or password fields, and MUST NOT
   submit the form or click the signin button under any circumstances.
 - **FR-010**: The script MUST normalize recognized text into a single candidate before
