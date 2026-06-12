@@ -1,28 +1,27 @@
 {
   "name": "uit-student-captcha-source",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "build": "nx run-many -t build",
     "test": "nx run-many -t test",
-    "typecheck": "nx run-many -t typecheck",
-    "release": "nx release"
+    "typecheck": "nx run-many -t typecheck"
   },
   "devDependencies": {
-    "@nx/js": "22.7.5",
-    "@nx/vite": "22.7.5",
-    "@nx/vitest": "22.7.5",
-    "@types/node": "^24.0.0",
-    "@typescript/native-preview": "7.0.0-dev.20260610.1",
-    "@vitejs/plugin-react": "^6.0.2",
-    "@vitest/coverage-v8": "^4.1.8",
-    "jsdom": "^29.1.1",
-    "nx": "22.7.5",
-    "typescript": "^6.0.3",
-    "vite": "^8.0.11",
-    "vite-plugin-monkey": "^8.0.6",
-    "vitest": "^4.1.8"
+    "@nx/js": "catalog:",
+    "@nx/vite": "catalog:",
+    "@nx/vitest": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "jsdom": "catalog:",
+    "nx": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-monkey": "catalog:",
+    "vitest": "catalog:"
   },
   "engines": {
     "node": "^26"

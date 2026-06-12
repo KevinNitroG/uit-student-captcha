@@ -20,7 +20,9 @@
 ### Session 2026-06-12
 
 - Q: How is configuration edited and stored? → A: The userscript registers a userscript-manager menu command that opens a dedicated hosted configuration page (a React SPA on GitHub Pages). The userscript also runs on that page and bridges the SPA's saved settings (via postMessage) into the userscript storage API, which is the source of truth read on the portal.
-- Q: What happens when the user hasn't configured anything yet? → A: On the portal, if required provider configuration is missing, the script shows a non-blocking notice beneath the captcha telling the user to open the configuration page via the menu command (rather than silently doing nothing); the no-key default provider still attempts recognition where possible.
+- Q: What happens when the user hasn't configured anything yet? → A: On the portal, if no provider is configured (the default, since every backend needs a key), the script shows a non-blocking notice beneath the captcha telling the user to open the configuration page via the menu command, rather than silently doing nothing or sending a doomed request.
+- Q: Is the captcha image URL public or session/cookie-bound? → A: Confirmed public and stable — the captcha PNG URL is fetchable by a third party without the user's session. OCR.space's URL input mode (its server fetching the image directly) is therefore valid.
+- Q: How does the script obtain the image bytes for byte-based providers (EasyOCR), and what is "Retry OCR" for? → A: Read bytes by drawing the already-loaded same-origin captcha `<img>` to a `<canvas>` (no re-fetch). The portal has no in-page captcha-refresh control, so "Retry OCR" re-runs the provider chain on the *same* currently-shown image — its purpose is recovering from transient provider failures (network/rate-limit/timeout), not fetching a new challenge.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -46,13 +48,16 @@ and the submit button remain untouched.
    **When** the page finishes loading, **Then** the captcha answer field is filled
    with the text returned by the OCR service and the username, password, and
    submit controls are not modified.
-2. **Given** the captcha answer field already contains text, **When** the script
-   runs, **Then** it replaces the field contents with the freshly recognized text
-   (so a stale or wrong value is corrected).
-3. **Given** the auto-fill produced a wrong value or the user manually refreshed the
-   captcha image, **When** the user clicks the "Retry OCR" control, **Then** the
-   script re-reads the captcha image currently shown and re-fills the answer field
-   (the script does not automatically watch the image for changes between loads).
+2. **Given** the captcha answer field already contains text (the user is typing it
+   themselves), **When** the script runs, **Then** it leaves the field untouched and
+   skips OCR, so the user's own input is never overwritten. Only an explicit "Retry
+   OCR" click overwrites a pre-filled value.
+3. **Given** recognition failed due to a transient provider problem (network,
+   rate-limit, or timeout), **When** the user clicks the "Retry OCR" control, **Then**
+   the script re-runs the provider chain on the captcha image currently shown and fills
+   the answer field if a provider now succeeds (the portal has no in-page captcha
+   refresh, and the script does not automatically watch the image for changes between
+   loads; a genuinely new challenge requires a full page reload).
 
 ---
 
@@ -92,11 +97,10 @@ credentials/keys and options each provider needs, through a dedicated configurat
 page opened from the userscript-manager menu. The settings persist across page loads
 and browser sessions.
 
-**Why this priority**: The two named services have different authentication needs
-(one needs no key, others need an API key / access key), and users must supply
-their own keys and choose ordering. Without persisted configuration the feature
-cannot reliably reach a working provider — but defaults allow a first run, so this
-is P2 rather than P1.
+**Why this priority**: Both named services require credentials (EasyOCR an access key,
+OCR.space an API key), and users must supply their own keys and choose ordering. Without
+persisted configuration the feature cannot reach a working provider — the default config
+is empty and the portal shows the "open configuration" notice until a key is added.
 
 **Independent Test**: Open the script's configuration, set a provider order and a
 key, reload the page, and confirm the previously entered values are still present
@@ -111,8 +115,9 @@ and are the ones used for recognition.
    would use it, **Then** the script skips it (or surfaces a clear "missing
    configuration" message) instead of sending an invalid request.
 3. **Given** no configuration has ever been saved, **When** the script first runs,
-   **Then** it uses sensible typed defaults (e.g., the no-key-required provider as
-   primary) so a first-time user gets a working experience.
+   **Then** it shows the non-blocking "open configuration" notice beneath the captcha
+   (the default config is empty, since every provider needs a key), directing the user
+   to add a provider.
 
 ---
 
@@ -160,7 +165,11 @@ and are the ones used for recognition.
   configured provider exactly once. Each provider gets a single attempt per challenge
   (primary once, then fallback once); the script MUST NOT auto-retry the same provider.
 - **FR-008**: The script MUST write the recognized text into the captcha answer
-  field, replacing any existing value, in a way the host page accepts as user input.
+  field in a way the host page accepts as user input, but MUST NOT overwrite a value
+  the user has already typed: if the answer field is non-empty when the script runs it
+  skips OCR entirely, and if the user types into the field while OCR is in flight the
+  result is discarded rather than clobbering their input. Only an explicit "Retry OCR"
+  action (FR-015) overwrites a pre-filled value.
 - **FR-009**: The script MUST NOT fill the username or password fields, and MUST NOT
   submit the form or click the signin button under any circumstances.
 - **FR-010**: The script MUST normalize recognized text into a single candidate before
@@ -185,13 +194,20 @@ and are the ones used for recognition.
   re-reads the captcha image currently shown and re-runs the provider chain. Success
   MAY be indicated subtly or silently.
 - **FR-016**: The script MUST solve the captcha present at page load. It does NOT
-  automatically watch the captcha image for later refreshes; re-recognition for a
-  changed/refreshed image happens only when the user invokes the "Retry OCR" control
-  (FR-015) or reloads the page.
+  automatically watch the captcha image for later refreshes. The "Retry OCR" control
+  (FR-015) re-runs the provider chain on the *same* currently-shown image — its purpose
+  is recovering from transient provider failures, not fetching a new challenge; a
+  genuinely new challenge comes only from a full page reload (the portal has no in-page
+  captcha-refresh control).
 - **FR-017**: The script MUST bound each recognition attempt with a timeout and MUST
   avoid repeatedly re-solving the same already-solved challenge in a loop.
-- **FR-018**: Sensible typed defaults MUST allow a first-time user (no saved config)
-  to get a working recognition attempt, preferring a provider that needs no key.
+- **FR-018**: The configuration MUST have sensible typed defaults and validation.
+  Because every supported OCR backend requires a key (EasyOCR has no keyless endpoint;
+  OCR.space requires an API key), the default config ships **no providers**; on first
+  run the portal shows the "open configuration" notice (FR-021) rather than attempting a
+  doomed request. The persisted config carries a schema `version`; on load, a config
+  from a **newer** schema version is reset to defaults (and additive/compatible changes
+  are migrated forward without data loss).
 - **FR-019**: Adding a new OCR provider in the future MUST NOT require changing the
   orchestration or DOM-binding logic (provider implementations are interchangeable
   behind one contract).
@@ -199,8 +215,8 @@ and are the ones used for recognition.
   the hosted configuration page so users can reach their settings from any matched page.
 - **FR-021**: When required provider configuration is missing or incomplete, the script
   MUST show a non-blocking notice beneath the captcha that directs the user to open the
-  configuration page (via the menu command), rather than failing silently. A provider
-  that needs no key MUST still be attempted where possible.
+  configuration page (via the menu command), rather than failing silently. With the
+  empty default config this is the expected first-run state until the user adds a key.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -210,10 +226,11 @@ and are the ones used for recognition.
   plus status (pending, solved, failed). One per displayed captcha.
 - **OCR Provider**: A named, interchangeable recognition backend with its own
   configuration shape (endpoint, key/credentials, options) and a uniform
-  "recognize image → text" behavior. Two are required initially (a no-key service and
-  a keyed service); ordering between them is user-configured.
+  "recognize image → text" behavior. Two are supported initially (EasyOCR and
+  OCR.space — both key-based); ordering between them is user-configured.
 - **Provider Configuration**: Persisted user settings — provider order, per-provider
-  credentials/keys/endpoints, and timeout — with typed defaults and validation.
+  credentials/keys/endpoints, and timeout — with a schema `version`, typed defaults, and
+  validation (forward-migrated on load; reset to defaults if from a newer version).
 - **Recognition Result / Status**: The outcome surfaced to the user — recognized text
   on success, or a clear reason on failure after the fallback chain is exhausted.
 
@@ -245,17 +262,23 @@ and are the ones used for recognition.
   portal renders the captcha as a distorted-text PNG under
   `.../english_captcha/captcha_*.png` with a single adjacent answer input — the OCR
   output is typed into that one field.
-- **Two OCR services are targeted initially**, as named by the user:
-  - EasyOCR — `POST https://api.easyocr.org/ocr` (multipart `file`, no key required;
-    returns recognized `words`), with the keyed `https://console.easyocr.org/api/ocr`
-    variant (header `X-Access-Key`) also supported as a configurable option.
+- **The captcha image URL is public and stable** (confirmed), not session/cookie-bound,
+  so a third-party OCR service may fetch it directly by URL. For byte-based providers the
+  script obtains the image by drawing the already-loaded same-origin `<img>` to a
+  `<canvas>` rather than issuing a second network request.
+- **Two OCR services are targeted initially**, as named by the user (both require a key
+  — verified 2026-06-12):
+  - EasyOCR — `POST https://console.easyocr.org/api/ocr` (multipart `file`, header
+    `X-Access-Key`; returns recognized `words`). There is **no keyless endpoint**
+    (`api.easyocr.org` does not resolve).
   - OCR.space — `POST https://api.ocr.space/parse/image` (API key + base64/file/URL;
     returns `ParsedResults[].ParsedText`); free tier ~500 requests/day per IP, 1 MB
-    image limit.
+    image limit. **OCR engine 2** is the default — engine 1 returns empty on the
+    portal's small distorted captchas.
   These specifics inform configuration shape; provider details belong to the plan.
-- **The no-key EasyOCR endpoint is the default primary** so first-time users get a
-  working experience without supplying credentials; OCR.space is the default fallback
-  once a key is configured.
+- **No provider is enabled by default.** Both backends need a key, so the default config
+  is empty and first-time users are directed to the configuration page (FR-021) to add a
+  provider and its key before recognition runs.
 - **Cross-origin requests** to the OCR services require the userscript host's
   privileged networking capability (not plain page `fetch`).
 - **The script only auto-fills the captcha.** Auto-filling credentials and

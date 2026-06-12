@@ -1,0 +1,12 @@
+{
+  // Library sources consumed (as TypeScript) by both apps. DOM lib is included for
+  // the postMessage/MessageEvent types used by the bridge contract; no Node here.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.lib.tsbuildinfo",
+    "outDir": "./out-tsc/lib",
+    "lib": ["ES2020", "DOM"]
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.spec.ts"]
+}

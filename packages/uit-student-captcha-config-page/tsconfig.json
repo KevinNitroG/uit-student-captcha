@@ -1,6 +1,12 @@
 {
   // Per-package solution file for the config-page SPA.
+  // `paths` is duplicated here (this file carries no sources of its own) so tooling
+  // that reads the package's root tsconfig — e.g. the shadcn CLI's alias resolver —
+  // maps `@/*` to ./src/*. The type-checking paths live in tsconfig.app.json.
   "files": [],
+  "compilerOptions": {
+    "paths": { "@/*": ["./src/*"] }
+  },
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" },
