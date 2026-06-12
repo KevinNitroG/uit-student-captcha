@@ -4,6 +4,7 @@
   "include-component-in-tag": false,
   "packages": {
     ".": {
+      "component": "",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         {
