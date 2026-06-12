@@ -25,7 +25,7 @@ function newOcrSpace(): OcrSpaceEntry {
     scheme: "https",
     httpMethod: "POST",
     inputMode: "url",
-    ocrEngine: 1,
+    ocrEngine: 2,
     language: "eng",
     enabled: false,
   };

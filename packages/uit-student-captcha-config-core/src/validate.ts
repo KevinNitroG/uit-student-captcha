@@ -28,12 +28,19 @@ function asBoolean(value: unknown, fallback: boolean): boolean {
   return typeof value === "boolean" ? value : fallback;
 }
 
+const EASYOCR_ENDPOINT = "https://console.easyocr.org/api/ocr";
+
 function validateEasyOcr(raw: Record<string, unknown>, index: number): EasyOcrEntry {
+  // Heal the retired keyless hosts (api.easyocr.org / cn-api.easyocr.org never
+  // resolved); EasyOCR is key-only via the console endpoint.
+  let endpoint = asString(raw["endpoint"], EASYOCR_ENDPOINT);
+  if (endpoint.includes("api.easyocr.org")) endpoint = EASYOCR_ENDPOINT;
+
   const base: EasyOcrEntry = {
     id: asString(raw["id"], `easyocr-${index}`),
     provider: "easyocr",
     enabled: asBoolean(raw["enabled"], true),
-    endpoint: asString(raw["endpoint"], "https://console.easyocr.org/api/ocr"),
+    endpoint,
   };
   const accessKey = raw["accessKey"];
   return typeof accessKey === "string" && accessKey.length > 0
@@ -42,8 +49,10 @@ function validateEasyOcr(raw: Record<string, unknown>, index: number): EasyOcrEn
 }
 
 function validateOcrSpace(raw: Record<string, unknown>, index: number): OcrSpaceEntry {
+  // Engine 2 is the default: engine 1 fails on the portal's small distorted captchas
+  // (verified — engine 1 returns empty, engine 2 reads them).
   const engine = raw["ocrEngine"];
-  const ocrEngine: 1 | 2 | 3 = engine === 2 ? 2 : engine === 3 ? 3 : 1;
+  const ocrEngine: 1 | 2 | 3 = engine === 1 ? 1 : engine === 3 ? 3 : 2;
   const inputRaw = raw["inputMode"];
   const inputMode: OcrSpaceEntry["inputMode"] =
     inputRaw === "base64" ? "base64" : inputRaw === "file" ? "file" : "url";

@@ -40,7 +40,18 @@ function runPortalMode(): void {
   const http = new GmHttpClient();
   const viewModel = new CaptchaViewModel(loadConfig(), http);
   const view = new PortalView(viewModel, { configUrl: CONFIG_PAGE_URL });
-  void view.run();
+  // Run after the page has fully loaded so the OCR request never extends the page's
+  // own load (the host tab kept showing a loading spinner otherwise).
+  afterPageLoad(() => void view.run());
+}
+
+/** Invoke fn once the document has finished loading (or on the next tick if already). */
+function afterPageLoad(fn: () => void): void {
+  if (document.readyState === "complete") {
+    setTimeout(fn, 0);
+  } else {
+    window.addEventListener("load", () => setTimeout(fn, 0), { once: true });
+  }
 }
 
 function runConfigMode(configOrigin: string): void {

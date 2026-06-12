@@ -99,6 +99,10 @@ export class CaptchaViewModel {
                 provider: resolver.id,
                 cause: err,
               });
+        console.warn(
+          `[uit-captcha] ${resolver.id} failed: ${lastError.code} — ${lastError.message}`,
+          lastError,
+        );
       }
     }
 

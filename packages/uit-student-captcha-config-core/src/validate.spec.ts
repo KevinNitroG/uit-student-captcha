@@ -29,7 +29,7 @@ describe("validateConfig", () => {
     });
     const entry = cfg.providers[0];
     expect(entry?.provider).toBe("ocrspace");
-    expect((entry as { ocrEngine: number }).ocrEngine).toBe(1);
+    expect((entry as { ocrEngine: number }).ocrEngine).toBe(2); // out-of-range → default 2
     expect((entry as { scheme: string }).scheme).toBe("https");
     expect((entry as { language: string }).language).toBe("eng");
   });
@@ -43,5 +43,23 @@ describe("validateConfig", () => {
     });
     expect(cfg.providers).toHaveLength(1);
     expect(cfg.providers[0]?.enabled).toBe(false);
+  });
+
+  it("heals the retired EasyOCR endpoint to the console API", () => {
+    const cfg = validateConfig({
+      providers: [
+        { provider: "easyocr", id: "e", enabled: true, endpoint: "https://api.easyocr.org/ocr", accessKey: "k" },
+      ],
+    });
+    expect((cfg.providers[0] as { endpoint: string }).endpoint).toBe(
+      "https://console.easyocr.org/api/ocr",
+    );
+  });
+
+  it("defaults OCR.space to engine 2 when unspecified", () => {
+    const cfg = validateConfig({
+      providers: [{ provider: "ocrspace", id: "o", enabled: true, apiKey: "k" }],
+    });
+    expect((cfg.providers[0] as { ocrEngine: number }).ocrEngine).toBe(2);
   });
 });
