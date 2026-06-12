@@ -19,10 +19,7 @@ export interface ProviderCardProps {
 }
 
 function titleFor(entry: ProviderEntry): string {
-  if (entry.provider === "easyocr") {
-    return `EasyOCR (${entry.variant})`;
-  }
-  return "OCR.space";
+  return entry.provider === "easyocr" ? "EasyOCR" : "OCR.space";
 }
 
 export function ProviderCard({

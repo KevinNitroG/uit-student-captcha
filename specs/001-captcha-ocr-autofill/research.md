@@ -155,7 +155,18 @@ Notes:
 
 ## EasyOCR API (provider id: `easyocr`)
 
-Two endpoints — a **free, keyless** one (default primary, FR-018) and a **keyed console** one.
+> **Correction (verified 2026-06-12 against the live service):** there is **no free,
+> keyless EasyOCR endpoint** — `api.easyocr.org` does not resolve. EasyOCR is
+> **key-only**: `POST https://console.easyocr.org/api/ocr` with an `X-Access-Key`
+> header (confirmed by `{"error":"invalid_access_key"}` on a keyless call and the
+> provider's own `curl` example). The `variant: "free"` field and `api.easyocr.org`
+> below were a research error and have been removed from the code. Because every
+> provider now needs a key, `DEFAULT_CONFIG.providers` ships **empty** and the portal
+> shows the "open configuration" notice until the user adds a key (supersedes FR-018's
+> "works with no key" premise).
+
+Originally documented as two endpoints — a "free, keyless" one and a keyed console one
+(the free one does not exist; see the correction above).
 
 ### Free / keyless endpoint
 - **Method/URL**: `POST https://api.easyocr.org/ocr` (China mirror `https://cn-api.easyocr.org/ocr`).

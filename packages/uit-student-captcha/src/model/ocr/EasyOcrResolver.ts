@@ -32,15 +32,15 @@ function mapStatus(status: number, provider: string, raw: unknown): OcrError {
 
 export class EasyOcrResolver implements OcrResolver {
   readonly id = "easyocr";
-  private readonly accessKey: string | undefined;
+  private readonly accessKey: string;
 
   constructor(
     private readonly entry: EasyOcrEntry,
     private readonly http: HttpClient,
     private readonly timeoutMs: number,
   ) {
-    if (entry.variant === "keyed" && !entry.accessKey) {
-      throw new OcrError("MISSING_CONFIG", "EasyOCR keyed variant requires an access key", {
+    if (!entry.accessKey) {
+      throw new OcrError("MISSING_CONFIG", "EasyOCR requires an access key", {
         provider: this.id,
       });
     }
@@ -54,10 +54,7 @@ export class EasyOcrResolver implements OcrResolver {
 
     const form = new FormData();
     form.append("file", input.imageBytes, "captcha.png");
-    const headers: Record<string, string> = {};
-    if (this.entry.variant === "keyed" && this.accessKey) {
-      headers["X-Access-Key"] = this.accessKey;
-    }
+    const headers: Record<string, string> = { "X-Access-Key": this.accessKey };
 
     const res = await this.http.request({
       method: "POST",

@@ -8,7 +8,10 @@ class FakeClient implements BridgeClient {
   private listener: BridgeListener | null = null;
   readonly saved: ProviderConfiguration[] = [];
 
-  constructor(private readonly reply: "ack" | "error" = "ack") {}
+  constructor(
+    private readonly reply: "ack" | "error" = "ack",
+    private readonly initial: ProviderConfiguration = DEFAULT_CONFIG,
+  ) {}
 
   onMessage(listener: BridgeListener): () => void {
     this.listener = listener;
@@ -16,7 +19,7 @@ class FakeClient implements BridgeClient {
   }
 
   requestConfig(): void {
-    this.listener?.({ type: "uoc:value", payload: DEFAULT_CONFIG });
+    this.listener?.({ type: "uoc:value", payload: this.initial });
   }
 
   saveConfig(payload: ProviderConfiguration): void {
@@ -25,6 +28,24 @@ class FakeClient implements BridgeClient {
     else this.listener?.({ type: "uoc:error", message: "Invalid configuration payload" });
   }
 }
+
+const WITH_KEYLESS_OCRSPACE: ProviderConfiguration = {
+  version: 1,
+  timeoutMs: 15000,
+  providers: [
+    {
+      id: "ocrspace-1",
+      provider: "ocrspace",
+      apiKey: "",
+      scheme: "https",
+      httpMethod: "POST",
+      inputMode: "url",
+      ocrEngine: 1,
+      language: "eng",
+      enabled: true,
+    },
+  ],
+};
 
 describe("App", () => {
   it("hydrates from uoc:get and renders the returned config", () => {
@@ -57,7 +78,7 @@ describe("App", () => {
   });
 
   it("flags an empty required key with a ⚠ warning", () => {
-    render(<App client={new FakeClient()} />);
+    render(<App client={new FakeClient("ack", WITH_KEYLESS_OCRSPACE)} />);
     expect(screen.getByText(/required/i)).toBeTruthy();
   });
 });

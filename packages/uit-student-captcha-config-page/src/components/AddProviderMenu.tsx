@@ -12,8 +12,7 @@ function newEasyOcr(): EasyOcrEntry {
   return {
     id: `easyocr-${Date.now()}`,
     provider: "easyocr",
-    variant: "free",
-    endpoint: "https://api.easyocr.org/ocr",
+    endpoint: "https://console.easyocr.org/api/ocr",
     enabled: true,
   };
 }

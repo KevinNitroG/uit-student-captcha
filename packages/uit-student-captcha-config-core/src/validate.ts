@@ -29,18 +29,11 @@ function asBoolean(value: unknown, fallback: boolean): boolean {
 }
 
 function validateEasyOcr(raw: Record<string, unknown>, index: number): EasyOcrEntry {
-  const variant = raw["variant"] === "keyed" ? "keyed" : "free";
   const base: EasyOcrEntry = {
     id: asString(raw["id"], `easyocr-${index}`),
     provider: "easyocr",
     enabled: asBoolean(raw["enabled"], true),
-    variant,
-    endpoint: asString(
-      raw["endpoint"],
-      variant === "keyed"
-        ? "https://console.easyocr.org/api/ocr"
-        : "https://api.easyocr.org/ocr",
-    ),
+    endpoint: asString(raw["endpoint"], "https://console.easyocr.org/api/ocr"),
   };
   const accessKey = raw["accessKey"];
   return typeof accessKey === "string" && accessKey.length > 0

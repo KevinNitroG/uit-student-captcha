@@ -1,11 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
-import { DEFAULT_CONFIG } from "uit-student-captcha-config-core";
+import type { ProviderConfiguration } from "uit-student-captcha-config-core";
 import type { OcrResolver } from "../model/ocr/OcrResolver.ts";
 import { CaptchaViewModel } from "../viewmodel/CaptchaViewModel.ts";
 import { PortalView } from "./PortalView.ts";
 import { fakeHttpClient, jsonResponse } from "../../test/helpers/mocks.ts";
 
 const http = fakeHttpClient(() => jsonResponse(200, {}));
+
+const oneProvider: ProviderConfiguration = {
+  version: 1,
+  timeoutMs: 15000,
+  providers: [
+    { id: "p", provider: "easyocr", endpoint: "https://x", enabled: true, accessKey: "k" },
+  ],
+};
 
 function renderSigninForm(): void {
   document.body.innerHTML = `
@@ -27,7 +35,7 @@ function viewModelSolvingTo(text: string): CaptchaViewModel {
     id: "stub",
     resolve: () => Promise.resolve({ provider: "stub", rawText: text, text, confidence: null }),
   };
-  return new CaptchaViewModel(DEFAULT_CONFIG, http, () => stub);
+  return new CaptchaViewModel(oneProvider, http, () => stub);
 }
 
 describe("PortalView", () => {

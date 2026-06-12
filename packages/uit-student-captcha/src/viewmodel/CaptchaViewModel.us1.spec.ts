@@ -6,6 +6,14 @@ import { fakeHttpClient, jsonResponse } from "../../test/helpers/mocks.ts";
 
 const http = fakeHttpClient(() => jsonResponse(200, {}));
 
+const oneProvider: ProviderConfiguration = {
+  version: 1,
+  timeoutMs: 15000,
+  providers: [
+    { id: "p", provider: "easyocr", endpoint: "https://x", enabled: true, accessKey: "k" },
+  ],
+};
+
 const stub: OcrResolver = {
   id: "stub",
   resolve: () =>
@@ -14,7 +22,7 @@ const stub: OcrResolver = {
 
 describe("CaptchaViewModel (US1 happy path)", () => {
   it("solves with the normalized text from the single configured resolver", async () => {
-    const vm = new CaptchaViewModel(DEFAULT_CONFIG, http, () => stub);
+    const vm = new CaptchaViewModel(oneProvider, http, () => stub);
     vm.setImage("https://x/captcha.png", new Blob(["x"]), "image/png");
 
     const status = await vm.solve();
@@ -23,13 +31,8 @@ describe("CaptchaViewModel (US1 happy path)", () => {
     expect(status.kind === "solved" && status.result.text).toBe("Old");
   });
 
-  it("reports missing-config when no provider is enabled", async () => {
-    const allDisabled: ProviderConfiguration = {
-      version: 1,
-      timeoutMs: 15000,
-      providers: DEFAULT_CONFIG.providers.map((p) => ({ ...p, enabled: false })),
-    };
-    const vm = new CaptchaViewModel(allDisabled, http, () => stub);
+  it("reports missing-config when the chain is empty (default config)", async () => {
+    const vm = new CaptchaViewModel(DEFAULT_CONFIG, http, () => stub);
 
     const status = await vm.solve();
 

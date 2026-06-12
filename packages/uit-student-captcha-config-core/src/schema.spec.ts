@@ -2,16 +2,12 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG, isBridgeMessage } from "./index.ts";
 
 describe("DEFAULT_CONFIG", () => {
-  it("makes the no-key EasyOCR provider the enabled primary", () => {
-    const primary = DEFAULT_CONFIG.providers[0];
-    expect(primary?.provider).toBe("easyocr");
-    expect(primary?.enabled).toBe(true);
+  it("ships no providers (every backend needs a key — user configures one)", () => {
+    expect(DEFAULT_CONFIG.providers).toEqual([]);
   });
 
-  it("ships OCR.space as a disabled fallback (needs a key)", () => {
-    const fallback = DEFAULT_CONFIG.providers[1];
-    expect(fallback?.provider).toBe("ocrspace");
-    expect(fallback?.enabled).toBe(false);
+  it("has a sane default per-attempt timeout", () => {
+    expect(DEFAULT_CONFIG.timeoutMs).toBeGreaterThan(0);
   });
 });
 

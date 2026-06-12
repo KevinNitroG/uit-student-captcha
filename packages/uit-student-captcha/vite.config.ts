@@ -39,6 +39,8 @@ export default defineConfig(({ mode }) => {
             "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Logo_UIT_updated.jpg/960px-Logo_UIT_updated.jpg",
           downloadURL:
             "https://github.com/KevinNitroG/uit-student-captcha/releases/latest/download/uit-student-captcha.user.js",
+          updateURL:
+            "https://github.com/KevinNitroG/uit-student-captcha/releases/latest/download/uit-student-captcha.user.js",
           namespace: "kevinnitrog/uit-student-captcha",
           match: ["https://student.uit.edu.vn/*", `${configOrigin}/*`],
           connect: ["api.easyocr.org", "console.easyocr.org", "api.ocr.space", configHost],

@@ -24,9 +24,9 @@ export interface ProviderEntryBase {
 
 export interface EasyOcrEntry extends ProviderEntryBase {
   readonly provider: "easyocr";
-  readonly variant: "free" | "keyed";
+  /** easyocr.org OCR endpoint (the console API; there is no keyless endpoint). */
   readonly endpoint: string;
-  /** Required when variant === "keyed" (sent as the X-Access-Key header). */
+  /** Required: the X-Access-Key issued at console.easyocr.org (sent as a header). */
   readonly accessKey?: string;
 }
 
@@ -47,31 +47,14 @@ export interface OcrSpaceEntry extends ProviderEntryBase {
   readonly isTable?: boolean;
 }
 
-/** Typed defaults so a first-time user (no saved config) gets a working attempt with
- *  the no-key EasyOCR provider; OCR.space is present but disabled until a key is set. */
+/** Typed defaults. No provider is configured out of the box — every OCR backend needs
+ *  a key (EasyOCR has no keyless endpoint, OCR.space requires an API key), so a bogus
+ *  default would just fail. The portal shows the "open configuration" notice on an empty
+ *  chain; the config page starts empty with "+ Add provider". */
 export const DEFAULT_CONFIG: ProviderConfiguration = {
   version: 1,
   timeoutMs: 15_000,
-  providers: [
-    {
-      id: "easyocr-free",
-      provider: "easyocr",
-      variant: "free",
-      endpoint: "https://api.easyocr.org/ocr",
-      enabled: true,
-    },
-    {
-      id: "ocrspace-1",
-      provider: "ocrspace",
-      apiKey: "",
-      scheme: "https",
-      httpMethod: "POST",
-      inputMode: "url",
-      ocrEngine: 1,
-      language: "eng",
-      enabled: false,
-    },
-  ],
+  providers: [],
 };
 
 /** Bounds used by validateConfig() when clamping user input. */
