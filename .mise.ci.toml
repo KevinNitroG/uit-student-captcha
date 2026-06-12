@@ -2,3 +2,6 @@
 
 [tools]
 "npm:@kevinnitro/nx-cache-action" = "0.1.0"
+
+[shell_alias]
+nx = "./node_modules/.bin/nx"

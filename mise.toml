@@ -7,3 +7,4 @@ pnpm = "11"
 [shell_alias]
 specify = "mise exec pipx:git+https://github.com/github/spec-kit.git -- specify"
 shadcn = "mise exec npm:shadcn@latest -- shadcn"
+nx = "./node_modules/.bin/nx"
