@@ -59,7 +59,7 @@ jobs:
       - name: Typecheck, test, and build all projects
         run: |
           nx-cache-action -- \
-          nx run-many \
+          pnpm exec nx run-many \
           -t typecheck \
           -t test \
           -t build
@@ -138,7 +138,9 @@ jobs:
       - name: Build with the released version baked in
         run: |
           nx-cache-action -- \
-          nx run-many -t build
+          pnpm exec \
+          nx run-many \
+          -t build
 
       - name: Attach userscript asset to the release
         uses: softprops/action-gh-release@v2
