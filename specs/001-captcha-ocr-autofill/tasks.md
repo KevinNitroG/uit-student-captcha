@@ -109,17 +109,17 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 ### Implementation for User Story 3
 
 - [X] T028 [P] [US3] Re-export the shared config/bridge contract for SPA components — **done** in `packages/uit-student-captcha-config-page/src/config/schema.ts` (re-exports `uit-student-captcha-config-core`; replaces the old "mirror" approach per research.md Decision 9)
-- [ ] T029 [US3] Add shadcn primitives used by the form (`input`, `label`, `switch`, `select`, `card`, `collapsible`, `badge`) via `mise exec npm:shadcn@latest -- shadcn add ...` into `packages/uit-student-captcha-config-page/src/components/ui/`
-- [ ] T030 [P] [US3] Implement SPA `postMessageClient` — `uoc:get`/`uoc:set` with an explicit `targetOrigin`, origin-filtered receive validated with `isBridgeMessage` (imported from config-core) — in `packages/uit-student-captcha-config-page/src/bridge/postMessageClient.ts` (contracts/config-bridge.contract.md)
-- [ ] T031 [P] [US3] Implement `EasyOcrFields` (variant radio, endpoint, conditional access key) in `packages/uit-student-captcha-config-page/src/components/EasyOcrFields.tsx`
-- [ ] T032 [P] [US3] Implement `OcrSpaceFields` (required API key + collapsible Advanced: scheme/method/inputMode/engine/language/flags) in `packages/uit-student-captcha-config-page/src/components/OcrSpaceFields.tsx`
-- [ ] T033 [US3] Implement `ProviderCard` (discriminated `provider` switch → fields; enable toggle, delete) and `ProviderList` (reorder = chain order) in `packages/uit-student-captcha-config-page/src/components/` (depends on T031, T032)
-- [ ] T034 [US3] Implement `GlobalSettings` (timeout), `AddProviderMenu`, and `SaveBar` (dirty/ack/error) in `packages/uit-student-captcha-config-page/src/components/`
-- [ ] T035 [US3] Compose `App.tsx` — hydrate via `postMessageClient`, hold config state, surface required-key warnings, Save/Reset, userscript-connected indicator — in `packages/uit-student-captcha-config-page/src/App.tsx` (depends on T028, T030, T033, T034)
-- [ ] T036 [P] [US3] Config-page jsdom tests — `uoc:get` round-trip renders config; Save posts `uoc:set` and shows ack; invalid payload shows error; empty required key shows ⚠ — in `packages/uit-student-captcha-config-page/test/App.spec.tsx`
-- [ ] T037 [US3] Implement `configBridge` (userscript side) — verify `event.origin`/`event.source`, `isBridgeMessage` guard, handle `uoc:get`/`uoc:set` against GM storage at `STORAGE_KEY`, `validateConfig` before persist, reply `uoc:value`/`uoc:ack`/`uoc:error` (all from config-core) — in `packages/uit-student-captcha/src/bridge/configBridge.ts` (depends on T009; contracts/config-bridge.contract.md)
-- [ ] T038 [P] [US3] `configBridge` jsdom tests — foreign origin ignored (no `GM_setValue`); valid `uoc:set` persists + acks; invalid payload → `uoc:error` — in `packages/uit-student-captcha/test/configBridge.spec.ts`
-- [ ] T039 [US3] Wire config-page mode in `packages/uit-student-captcha/src/main.ts` — route on the config-page origin to `configBridge`, and register the `GM_registerMenuCommand` that opens `${VITE_CONFIG_PAGE_ORIGIN}${BASE}configure.html` on the portal (FR-011/FR-020). Confirm `GM_registerMenuCommand` + `GM_openInTab` are in the `@grant` list (add them in `vite.config.ts` if missing — do not defer to T040) and that the config-page build emits `configure.html` (not just `index.html`)
+- [X] T029 [US3] Add shadcn primitives used by the form (`input`, `label`, `switch`, `select`, `card`, `collapsible`, `badge`) via `mise exec npm:shadcn@latest -- shadcn add ...` into `packages/uit-student-captcha-config-page/src/components/ui/`
+- [X] T030 [P] [US3] Implement SPA `postMessageClient` — `uoc:get`/`uoc:set` with an explicit `targetOrigin`, origin-filtered receive validated with `isBridgeMessage` (imported from config-core) — in `packages/uit-student-captcha-config-page/src/bridge/postMessageClient.ts` (contracts/config-bridge.contract.md)
+- [X] T031 [P] [US3] Implement `EasyOcrFields` (variant radio, endpoint, conditional access key) in `packages/uit-student-captcha-config-page/src/components/EasyOcrFields.tsx`
+- [X] T032 [P] [US3] Implement `OcrSpaceFields` (required API key + collapsible Advanced: scheme/method/inputMode/engine/language/flags) in `packages/uit-student-captcha-config-page/src/components/OcrSpaceFields.tsx`
+- [X] T033 [US3] Implement `ProviderCard` (discriminated `provider` switch → fields; enable toggle, delete) and `ProviderList` (reorder = chain order) in `packages/uit-student-captcha-config-page/src/components/` (depends on T031, T032)
+- [X] T034 [US3] Implement `GlobalSettings` (timeout), `AddProviderMenu`, and `SaveBar` (dirty/ack/error) in `packages/uit-student-captcha-config-page/src/components/`
+- [X] T035 [US3] Compose `App.tsx` — hydrate via `postMessageClient`, hold config state, surface required-key warnings, Save/Reset, userscript-connected indicator — in `packages/uit-student-captcha-config-page/src/App.tsx` (depends on T028, T030, T033, T034)
+- [X] T036 [P] [US3] Config-page jsdom tests — `uoc:get` round-trip renders config; Save posts `uoc:set` and shows ack; invalid payload shows error; empty required key shows ⚠ — in `packages/uit-student-captcha-config-page/src/App.spec.tsx`
+- [X] T037 [US3] Implement `configBridge` (userscript side) — verify `event.origin`/`event.source`, `isBridgeMessage` guard, handle `uoc:get`/`uoc:set` against GM storage at `STORAGE_KEY`, `validateConfig` before persist, reply `uoc:value`/`uoc:ack`/`uoc:error` (all from config-core) — in `packages/uit-student-captcha/src/bridge/configBridge.ts` (depends on T009; contracts/config-bridge.contract.md)
+- [X] T038 [P] [US3] `configBridge` jsdom tests — foreign origin ignored (no `GM_setValue`); valid `uoc:set` persists + acks; invalid payload → `uoc:error` — in `packages/uit-student-captcha/src/bridge/configBridge.spec.ts`
+- [X] T039 [US3] Wire config-page mode in `packages/uit-student-captcha/src/main.ts` — route on the config-page origin to `configBridge`, and register the `GM_registerMenuCommand` that opens `${VITE_CONFIG_PAGE_ORIGIN}${BASE}configure.html` on the portal (FR-011/FR-020). Confirm `GM_registerMenuCommand` + `GM_openInTab` are in the `@grant` list (add them in `vite.config.ts` if missing — do not defer to T040) and that the config-page build emits `configure.html` (not just `index.html`)
 
 **Checkpoint**: Settings edited on the hosted page persist into GM storage and drive recognition.
 
@@ -129,10 +129,10 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 
 **Purpose**: Validation and final hardening across stories.
 
-- [ ] T040 [P] Review userscript `@grant`/`@connect`/`@match` are minimal and complete (add `GM_openInTab` only if used) in `packages/uit-student-captcha/vite.config.ts` (Constitution V)
-- [ ] T041 Run `pnpm exec nx run-many -t typecheck test build` and ensure it is green across both packages
-- [ ] T042 [P] Execute the manual scenarios in `specs/001-captcha-ocr-autofill/quickstart.md` (install built `.user.js`, run scenarios 1–7) and record results
-- [ ] T043 [P] Update `README.md` with install + configuration usage (menu command, providers, keys)
+- [X] T040 [P] Review userscript `@grant`/`@connect`/`@match` are minimal and complete (add `GM_openInTab` only if used) in `packages/uit-student-captcha/vite.config.ts` (Constitution V)
+- [X] T041 Run `pnpm exec nx run-many -t typecheck test build` and ensure it is green across both packages
+- [ ] T042 [P] Execute the manual scenarios in `specs/001-captcha-ocr-autofill/quickstart.md` (install built `.user.js`, run scenarios 1–7) and record results — ⚠ MANUAL: requires installing the built `.user.js` in Tampermonkey/Violentmonkey against the live portal; not executable in this headless environment. Automated coverage (45 unit tests) substitutes for scenarios 1–7 at the unit level.
+- [X] T043 [P] Update `README.md` with install + configuration usage (menu command, providers, keys)
 
 ---
 

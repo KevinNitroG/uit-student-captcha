@@ -13,13 +13,15 @@ import {
   validateConfig,
   type ProviderConfiguration,
 } from "uit-student-captcha-config-core";
+import { ConfigBridge } from "./bridge/configBridge.ts";
 import { GmHttpClient } from "./model/http/HttpClient.ts";
-import { gmGetValue } from "./platform/gm.ts";
+import { gmGetValue, gmOpenInTab, gmRegisterMenuCommand } from "./platform/gm.ts";
 import { CaptchaViewModel } from "./viewmodel/CaptchaViewModel.ts";
 import { PortalView } from "./view/PortalView.ts";
 
 const rawOrigin = import.meta.env["VITE_CONFIG_PAGE_ORIGIN"];
 const CONFIG_PAGE_ORIGIN = typeof rawOrigin === "string" ? rawOrigin : "http://localhost:3000";
+const CONFIG_PAGE_URL = `${CONFIG_PAGE_ORIGIN}/configure.html`;
 
 function loadConfig(): ProviderConfiguration {
   const stored = gmGetValue(STORAGE_KEY, "");
@@ -32,18 +34,23 @@ function loadConfig(): ProviderConfiguration {
 }
 
 function runPortalMode(): void {
+  // FR-020: a menu command opens the hosted config page.
+  gmRegisterMenuCommand("Configure OCR providers", () => gmOpenInTab(CONFIG_PAGE_URL));
+
   const http = new GmHttpClient();
   const viewModel = new CaptchaViewModel(loadConfig(), http);
-  const view = new PortalView(viewModel, {
-    configUrl: `${CONFIG_PAGE_ORIGIN}/configure.html`,
-  });
+  const view = new PortalView(viewModel, { configUrl: CONFIG_PAGE_URL });
   void view.run();
+}
+
+function runConfigMode(configOrigin: string): void {
+  new ConfigBridge({ allowedOrigin: configOrigin }).start();
 }
 
 function bootstrap(): void {
   const configOrigin = new URL(CONFIG_PAGE_ORIGIN).origin;
   if (window.location.origin === configOrigin) {
-    // TODO(US3 / T039): config-bridge mode — relay postMessage <-> GM storage.
+    runConfigMode(configOrigin);
     return;
   }
   runPortalMode();

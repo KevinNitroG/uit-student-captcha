@@ -12,5 +12,8 @@ export type {
 export {
   DEFAULT_CONFIG,
   STORAGE_KEY,
+  TIMEOUT_MS_MIN,
+  TIMEOUT_MS_MAX,
   isBridgeMessage,
+  validateConfig,
 } from "uit-student-captcha-config-core";
