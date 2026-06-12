@@ -59,7 +59,7 @@ jobs:
       - name: Typecheck, test, and build all projects
         run: |
           nx-cache-action -- \
-          pnpm exec nx run-many \
+          pnpm exec nx affected \
           -t typecheck \
           -t test \
           -t build
@@ -89,11 +89,6 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  # Runs only on the push that merges the Release PR (release_created == true). At that
-  # point main HEAD already carries the bumped version in package.json, so the build
-  # bakes the correct userscript header. We attach the .user.js to the freshly created
-  # release and deploy the config page to GitHub Pages in the same job (a release made
-  # with GITHUB_TOKEN does not fire the `release` event, so we chain the deploy inline).
   publish:
     name: Publish Asset · Deploy Config Page
     needs: release-please
@@ -130,12 +125,9 @@ jobs:
           experimental: true
           cache: true
 
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install
 
-      # Both projects emit to {workspaceRoot}/dist/{projectName} (see vite.config.ts):
-      #   dist/uit-student-captcha/uit-student-captcha.user.js  — the userscript asset
-      #   dist/uit-student-captcha-config-page/                 — the config page
-      - name: Build with the released version baked in
+      - name: Build
         run: |
           nx-cache-action -- \
           pnpm exec \
@@ -143,7 +135,7 @@ jobs:
           -t build
 
       - name: Attach userscript asset to the release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
           files: dist/uit-student-captcha/uit-student-captcha.user.js
