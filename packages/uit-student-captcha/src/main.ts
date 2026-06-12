@@ -34,7 +34,9 @@ function loadConfig(): ProviderConfiguration {
 function runPortalMode(): void {
   const http = new GmHttpClient();
   const viewModel = new CaptchaViewModel(loadConfig(), http);
-  const view = new PortalView(viewModel);
+  const view = new PortalView(viewModel, {
+    configUrl: `${CONFIG_PAGE_ORIGIN}/configure.html`,
+  });
   void view.run();
 }
 

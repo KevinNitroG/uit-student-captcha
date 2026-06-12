@@ -1,10 +1,11 @@
 // Portal View (Constitution I/V): the ONLY layer that touches the portal DOM. It
 // detects the signin form, reads the captcha image (bytes via an untainted same-origin
-// canvas; public src as the URL), drives the ViewModel, and writes ONLY the answer
-// field. Every DOM access is guarded; it never touches username/password/submit.
-// Verified selectors: research.md Decision 7.
+// canvas; public src as the URL), drives the ViewModel, renders the status badge, and
+// writes ONLY the answer field. Every DOM access is guarded; it never touches
+// username/password/submit. Verified selectors: research.md Decision 7.
 
 import type { CaptchaStatus, CaptchaViewModel } from "../viewmodel/CaptchaViewModel.ts";
+import { StatusBadge } from "./statusBadge.ts";
 
 /** Detected DOM context (the ViewModel never reads the DOM). */
 export interface SigninFormContext {
@@ -18,6 +19,8 @@ export type ByteExtractor = (img: HTMLImageElement) => Promise<Blob | null>;
 export interface PortalViewOptions {
   /** Override the canvas-based byte extraction (used in tests). */
   readonly extractBytes?: ByteExtractor;
+  /** Config-page URL used by the missing-config notice. */
+  readonly configUrl?: string;
 }
 
 const LOG_PREFIX = "[uit-captcha]";
@@ -37,12 +40,18 @@ async function canvasExtractBytes(img: HTMLImageElement): Promise<Blob | null> {
 
 export class PortalView {
   private readonly extractBytes: ByteExtractor;
+  private readonly badge: StatusBadge;
+  private context: SigninFormContext | null = null;
 
   constructor(
     private readonly viewModel: CaptchaViewModel,
     options: PortalViewOptions = {},
   ) {
     this.extractBytes = options.extractBytes ?? canvasExtractBytes;
+    this.badge = new StatusBadge({
+      onRetry: () => this.retry(),
+      configUrl: options.configUrl ?? "#",
+    });
   }
 
   /** Locate the signin form + captcha elements, or null when absent. */
@@ -67,6 +76,10 @@ export class PortalView {
 
   /** Read the current image into the ViewModel, solve, and render (also used by Retry). */
   async solveInto(context: SigninFormContext): Promise<CaptchaStatus> {
+    this.context = context;
+    // Re-render the badge on each transition so "Reading…" shows during the chain.
+    this.viewModel.onStatusChange = (status) => this.badge.render(context.captchaImage, status);
+
     const img = context.captchaImage;
     const imageUrl = img.currentSrc || img.src || null;
     let bytes: Blob | null = null;
@@ -75,17 +88,21 @@ export class PortalView {
     } catch (err) {
       console.info(`${LOG_PREFIX} could not read captcha image bytes:`, err);
     }
+
     this.viewModel.setImage(imageUrl, bytes, "image/png");
     const status = await this.viewModel.solve();
-    this.render(context, status);
+
+    // Final render (covers the solved-guard short-circuit, which fires no transition).
+    this.badge.render(context.captchaImage, status);
+    if (status.kind === "solved") this.fillAnswer(context, status.result.text);
     return status;
   }
 
-  private render(context: SigninFormContext, status: CaptchaStatus): void {
-    if (status.kind === "solved") {
-      this.fillAnswer(context, status.result.text);
-    }
-    // Status badge + Retry control are rendered in User Story 2 (T025/T027).
+  /** Retry re-reads the current image and re-runs the chain from idle (FR-015/FR-016). */
+  private retry(): void {
+    if (!this.context) return;
+    this.viewModel.reset();
+    void this.solveInto(this.context);
   }
 
   /** Write ONLY the answer field and notify Drupal via input/change events (FR-008). */

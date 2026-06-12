@@ -26,6 +26,9 @@ export class CaptchaViewModel {
   /** Optional observer the View subscribes to so the badge re-renders on transitions. */
   onStatusChange: ((status: CaptchaStatus) => void) | null = null;
 
+  /** Image URL for which the chain already succeeded — the solved-guard (FR-017). */
+  private solvedImageUrl: string | null = null;
+
   constructor(
     config: ProviderConfiguration,
     http: HttpClient,
@@ -57,6 +60,16 @@ export class CaptchaViewModel {
 
   /** Run the provider chain once each, in order, until one succeeds. */
   async solve(): Promise<CaptchaStatus> {
+    // Solved-guard: don't re-solve the same image in a loop (FR-017). A manual Retry
+    // calls reset() first, which clears the guard so the same image can be re-read.
+    if (
+      this.status.kind === "solved" &&
+      this.solvedImageUrl !== null &&
+      this.solvedImageUrl === this.imageUrl
+    ) {
+      return this.status;
+    }
+
     if (this.ocrResolvers.length === 0) {
       return this.setStatus({ kind: "missing-config" });
     }
@@ -75,6 +88,7 @@ export class CaptchaViewModel {
       this.setStatus({ kind: "loading", provider: resolver.id });
       try {
         const result = await resolver.resolve(input);
+        this.solvedImageUrl = this.imageUrl;
         return this.setStatus({ kind: "solved", result });
       } catch (err) {
         attempts.push(resolver.id);
@@ -91,8 +105,10 @@ export class CaptchaViewModel {
     return this.setStatus({ kind: "failed", lastError, attempts });
   }
 
-  /** Reset to idle so a manual retry re-runs the chain (FR-015/FR-016). */
+  /** Reset to idle and clear the solved-guard so a manual retry re-runs the chain
+   *  on the current image (FR-015/FR-016). */
   reset(): void {
+    this.solvedImageUrl = null;
     this.setStatus({ kind: "idle" });
   }
 }
