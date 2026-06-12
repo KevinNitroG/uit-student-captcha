@@ -6,6 +6,7 @@
   "packages": {
     ".": {
       "package-name": "uit-student-captcha",
+      "component": "",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         {
