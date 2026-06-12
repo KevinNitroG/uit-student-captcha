@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.1.0...v1.1.1) (2026-06-12)
+
+
+### Continuous Integration
+
+* **release:** match empty component so merged Release PR cuts the tag ([b762c07](https://github.com/KevinNitroG/uit-student-captcha/commit/b762c076a130154f647accc38fc9a884709afc72))
+
 ## [1.1.0](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.0.0...v1.1.0) (2026-06-12)
 
 
