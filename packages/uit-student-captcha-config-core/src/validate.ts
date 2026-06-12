@@ -6,6 +6,7 @@
 // data-model.md §3 "Validation rules" and research.md Decision 9.
 
 import {
+  CONFIG_VERSION,
   DEFAULT_CONFIG,
   TIMEOUT_MS_MAX,
   TIMEOUT_MS_MIN,
@@ -28,19 +29,12 @@ function asBoolean(value: unknown, fallback: boolean): boolean {
   return typeof value === "boolean" ? value : fallback;
 }
 
-const EASYOCR_ENDPOINT = "https://console.easyocr.org/api/ocr";
-
 function validateEasyOcr(raw: Record<string, unknown>, index: number): EasyOcrEntry {
-  // Heal the retired keyless hosts (api.easyocr.org / cn-api.easyocr.org never
-  // resolved); EasyOCR is key-only via the console endpoint.
-  let endpoint = asString(raw["endpoint"], EASYOCR_ENDPOINT);
-  if (endpoint.includes("api.easyocr.org")) endpoint = EASYOCR_ENDPOINT;
-
   const base: EasyOcrEntry = {
     id: asString(raw["id"], `easyocr-${index}`),
     provider: "easyocr",
     enabled: asBoolean(raw["enabled"], true),
-    endpoint,
+    endpoint: asString(raw["endpoint"], "https://console.easyocr.org/api/ocr"),
   };
   const accessKey = raw["accessKey"];
   return typeof accessKey === "string" && accessKey.length > 0
@@ -84,15 +78,37 @@ function validateOcrSpace(raw: Record<string, unknown>, index: number): OcrSpace
   return entry;
 }
 
-/** Coerce arbitrary input into a valid ProviderConfiguration (never throws). */
+/**
+ * Coerce arbitrary input into a valid ProviderConfiguration (never throws).
+ *
+ * Schema-migration policy (data-model.md §3):
+ * - Field-by-field coercion below is forward-compatible: unknown keys are dropped and
+ *   missing keys are filled from defaults, so additive/compatible schema changes carry
+ *   a user's saved config across versions with no data loss and no prompt.
+ * - A config stamped with a version NEWER than CONFIG_VERSION was written by a later
+ *   build we can't safely interpret, so we reset to DEFAULT_CONFIG rather than corrupt
+ *   it. The config page then shows its normal empty/default state (a clear
+ *   "+ Add provider" call to action); `migrated` carries the reason for the SPA notice.
+ * - A breaking change to an existing shape should bump CONFIG_VERSION and add a
+ *   per-version migration step here (before coercion).
+ */
 export function validateConfig(raw: unknown): ProviderConfiguration {
   if (typeof raw !== "object" || raw === null) return DEFAULT_CONFIG;
   const obj = raw as Record<string, unknown>;
+
+  const version = obj["version"];
+  if (typeof version === "number" && version > CONFIG_VERSION) {
+    console.warn(
+      `[uit-captcha] saved config is version ${version} (newer than ${CONFIG_VERSION}); resetting to defaults`,
+    );
+    return DEFAULT_CONFIG;
+  }
+
   const timeoutMs = clampTimeout(obj["timeoutMs"]);
 
   const rawProviders = obj["providers"];
   if (!Array.isArray(rawProviders)) {
-    return { version: 1, timeoutMs, providers: DEFAULT_CONFIG.providers };
+    return { version: CONFIG_VERSION, timeoutMs, providers: DEFAULT_CONFIG.providers };
   }
 
   const providers: ProviderEntry[] = [];
@@ -103,5 +119,5 @@ export function validateConfig(raw: unknown): ProviderConfiguration {
     else if (entry["provider"] === "ocrspace") providers.push(validateOcrSpace(entry, index));
   });
 
-  return { version: 1, timeoutMs, providers };
+  return { version: CONFIG_VERSION, timeoutMs, providers };
 }

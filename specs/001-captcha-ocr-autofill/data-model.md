@@ -93,9 +93,8 @@ export interface ProviderEntryBase {
 
 export interface EasyOcrEntry extends ProviderEntryBase {
   readonly provider: "easyocr";
-  readonly variant: "free" | "keyed";       // free = api.easyocr.org; keyed = console.easyocr.org
-  readonly endpoint: string;                // default per variant; overridable
-  readonly accessKey?: string;              // required when variant === "keyed" (X-Access-Key)
+  readonly endpoint: string;                // default https://console.easyocr.org/api/ocr; overridable
+  readonly accessKey?: string;              // REQUIRED (X-Access-Key); EasyOCR has no keyless endpoint
 }
 
 export interface OcrSpaceEntry extends ProviderEntryBase {
@@ -104,7 +103,7 @@ export interface OcrSpaceEntry extends ProviderEntryBase {
   readonly scheme: "https" | "http";        // default "https"
   readonly httpMethod: "POST" | "GET";      // default "POST"
   readonly inputMode: "url" | "base64" | "file"; // default "url"
-  readonly ocrEngine: 1 | 2 | 3;            // default 1
+  readonly ocrEngine: 1 | 2 | 3;            // default 2 (engine 1 returns empty on the portal's small captchas)
   readonly language: string;                // default "eng"
   readonly endpoint?: string;               // override; else derived from scheme+method
   readonly isOverlayRequired?: boolean;
@@ -114,29 +113,39 @@ export interface OcrSpaceEntry extends ProviderEntryBase {
 }
 ```
 
-### Typed defaults (FR-018 — first run works with no key)
+> **EasyOCR is key-only** (verified 2026-06-12): there is no keyless endpoint
+> (`api.easyocr.org` does not resolve). The single endpoint is
+> `POST https://console.easyocr.org/api/ocr` with an `X-Access-Key` header — hence the
+> `variant` field was removed (research.md correction). Both providers require a key.
+
+### Typed defaults
 ```ts
+export const CONFIG_VERSION = 1;            // persisted-schema version
+
+// No provider is configured out of the box: every backend needs a key, so a baked
+// default would only fail. First run → empty chain → portal "open configuration"
+// notice; the config page starts empty with "+ Add provider".
 export const DEFAULT_CONFIG: ProviderConfiguration = {
-  version: 1,
+  version: CONFIG_VERSION,
   timeoutMs: 15000,
-  providers: [
-    { id: "easyocr-free", provider: "easyocr", variant: "free",
-      endpoint: "https://api.easyocr.org/ocr", enabled: true },
-    // OCR.space present as fallback but disabled until the user supplies a key:
-    { id: "ocrspace-1", provider: "ocrspace", apiKey: "", scheme: "https",
-      httpMethod: "POST", inputMode: "url", ocrEngine: 1, language: "eng",
-      enabled: false },
-  ],
+  providers: [],
 };
 ```
 
-### Validation rules (`config-core/src/validate.ts`)
-- Unknown/extra keys ignored; missing keys filled from `DEFAULT_CONFIG`.
-- `easyocr` + `variant:"keyed"` with empty `accessKey` → entry treated as misconfigured: skipped on the portal, flagged in the SPA (FR-013, FR-021).
+### Validation & migration rules (`config-core/src/validate.ts`)
+- Unknown/extra keys ignored; missing keys filled from defaults. Field-by-field coercion
+  is **forward-compatible**: additive/compatible schema changes carry a saved config
+  across versions with no data loss and no prompt.
+- A stored config stamped with a `version` **newer** than `CONFIG_VERSION` was written by
+  a later build we can't safely interpret → **reset to `DEFAULT_CONFIG`** (logged; the
+  config page then shows its normal empty/default state — a clear "+ Add provider" CTA).
+  A future breaking change bumps `CONFIG_VERSION` and adds a per-version migration step.
+- `easyocr` with empty `accessKey` → misconfigured: skipped on the portal, flagged in the SPA (FR-013, FR-021).
 - `ocrspace` with empty `apiKey` → same (skipped/flagged).
+- A user-set `endpoint` is preserved as-is (no auto-rewriting).
 - An entry with `enabled:false` is excluded from the runtime chain.
-- If the resulting runtime chain is empty (all disabled/misconfigured), the portal shows the "open configuration" notice (FR-021).
-- `ocrEngine` clamped to 1..3; `timeoutMs` clamped to a sane floor/ceiling.
+- If the resulting runtime chain is empty (none enabled/configured), the portal shows the "open configuration" notice (FR-021).
+- `ocrEngine` clamped to 1..3 (default 2); `timeoutMs` clamped to a sane floor/ceiling.
 
 ---
 

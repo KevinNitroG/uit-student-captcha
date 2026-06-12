@@ -11,7 +11,7 @@ Source: ocr.space/ocrapi (fetched 2026-06-12). See `research.md`.
 | `scheme` | `https` \| `http` | `https` |
 | `httpMethod` | `POST` \| `GET` | `POST` |
 | `inputMode` | `url` \| `base64` \| `file` | `url` |
-| `ocrEngine` | 1 \| 2 \| 3 | 1 |
+| `ocrEngine` | 1 \| 2 \| 3 | 2 (engine 1 returns empty on the portal's small captchas) |
 | `language` | e.g. `eng` | `eng` |
 
 Endpoints (derive when `endpoint` not overridden):

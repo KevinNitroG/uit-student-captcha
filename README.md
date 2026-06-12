@@ -41,8 +41,10 @@ pnpm exec nx serve uit-student-captcha-config-page  # run the config page locall
 
 ## Configuration
 
-Out of the box (no key required) the script uses **EasyOCR (free)**. Open the config
-page to change providers, order, and keys. Settings are saved into your userscript
+**Every OCR backend needs a key**, so nothing is configured out of the box: on first run
+the portal shows a "No OCR provider configured → open configuration" notice. Open the
+config page (the **Configure OCR providers** menu command on the portal), click
+**+ Add provider**, enter a key, and Save. Settings are saved into your userscript
 manager's storage via a `postMessage` bridge (keep the tab open while saving) and are
 read on the next portal load.
 
@@ -55,9 +57,11 @@ read on the next portal load.
 
 | Provider | Key | Notes |
 | --- | --- | --- |
-| **EasyOCR (free)** | none | Default primary. Sends the image bytes; no signup. |
-| **EasyOCR (keyed)** | `X-Access-Key` | Console endpoint; set the access key in Advanced. |
-| **OCR.space** | `apiKey` (required) | Disabled by default until you add a free key. Advanced: scheme, method, input mode (URL/base64/file), OCR engine (1–3), language, flags. |
+| **EasyOCR** | `X-Access-Key` (required) | `console.easyocr.org/api/ocr` — get a key at console.easyocr.org. Sends the image bytes. There is no keyless endpoint. |
+| **OCR.space** | `apiKey` (required) | Free key at ocr.space. Advanced: scheme, method, input mode (URL/base64/file), OCR engine (default **2** — engine 1 fails on these small captchas), language, flags. |
+
+Settings carry a schema `version`; on load, a config from a newer build is reset to
+defaults (compatible changes migrate forward without data loss).
 
 Adding a new provider is a small, isolated change: a new resolver + one registry case +
 one config-union member + one config-page sub-form — no view-model/view edits.

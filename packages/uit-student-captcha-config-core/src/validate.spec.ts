@@ -45,11 +45,18 @@ describe("validateConfig", () => {
     expect(cfg.providers[0]?.enabled).toBe(false);
   });
 
-  it("heals the retired EasyOCR endpoint to the console API", () => {
+  it("preserves a user-set EasyOCR endpoint (no auto-rewrite)", () => {
     const cfg = validateConfig({
       providers: [
-        { provider: "easyocr", id: "e", enabled: true, endpoint: "https://api.easyocr.org/ocr", accessKey: "k" },
+        { provider: "easyocr", id: "e", enabled: true, endpoint: "https://my.proxy/ocr", accessKey: "k" },
       ],
+    });
+    expect((cfg.providers[0] as { endpoint: string }).endpoint).toBe("https://my.proxy/ocr");
+  });
+
+  it("defaults the EasyOCR endpoint to the console API when unset", () => {
+    const cfg = validateConfig({
+      providers: [{ provider: "easyocr", id: "e", enabled: true, accessKey: "k" }],
     });
     expect((cfg.providers[0] as { endpoint: string }).endpoint).toBe(
       "https://console.easyocr.org/api/ocr",
@@ -61,5 +68,14 @@ describe("validateConfig", () => {
       providers: [{ provider: "ocrspace", id: "o", enabled: true, apiKey: "k" }],
     });
     expect((cfg.providers[0] as { ocrEngine: number }).ocrEngine).toBe(2);
+  });
+
+  it("resets to defaults when the stored schema version is newer", () => {
+    const cfg = validateConfig({
+      version: 999,
+      timeoutMs: 5000,
+      providers: [{ provider: "ocrspace", id: "o", enabled: true, apiKey: "k" }],
+    });
+    expect(cfg).toEqual(DEFAULT_CONFIG);
   });
 });

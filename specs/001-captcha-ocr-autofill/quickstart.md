@@ -47,7 +47,7 @@ Install the built `.user.js` in your userscript manager, then:
 | 3 | Load a page with no signin form | Zero visible effect; one informational console log; no errors | SC-003 |
 | 4 | All providers fail | One inline non-blocking error badge beneath the captcha + working "Retry OCR"; page stays usable | SC-006 |
 | 5 | Open menu command → config page, set order + key, Save, reopen | Values persisted (GM storage) and shown on reopen; used on next portal load | SC-005 |
-| 6 | First run, no config saved | EasyOCR free (no key) attempts recognition; OCR.space fallback shown disabled until key set | FR-018, FR-021 |
+| 6 | First run, no config saved | No provider configured (default is empty); portal shows the "open configuration" notice; config page starts empty with "+ Add provider" | FR-018, FR-021 |
 | 7 | Wrong fill, click "Retry OCR" | Current captcha image re-read and re-filled | FR-015/FR-016 |
 
 ## Automated coverage (must pass before done)

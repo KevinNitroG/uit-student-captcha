@@ -47,12 +47,16 @@ export interface OcrSpaceEntry extends ProviderEntryBase {
   readonly isTable?: boolean;
 }
 
+/** Current persisted-schema version. Bump on a breaking change and add a migration
+ *  step in validateConfig(); a stored config with a newer version is reset to defaults. */
+export const CONFIG_VERSION = 1 as const;
+
 /** Typed defaults. No provider is configured out of the box — every OCR backend needs
  *  a key (EasyOCR has no keyless endpoint, OCR.space requires an API key), so a bogus
  *  default would just fail. The portal shows the "open configuration" notice on an empty
  *  chain; the config page starts empty with "+ Add provider". */
 export const DEFAULT_CONFIG: ProviderConfiguration = {
-  version: 1,
+  version: CONFIG_VERSION,
   timeoutMs: 15_000,
   providers: [],
 };

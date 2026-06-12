@@ -27,10 +27,9 @@ Decision 8). Build components from shadcn primitives (`Button`, `Input`, `Switch
 ├──────────────────────────────────────────────────────────────────────┤
 │  Providers (drag to reorder — top = primary, then fallback chain)      │
 │                                                                        │
-│  ⠿  [▣ enabled]  EasyOCR (free)                       [▲][▼][🗑]        │
-│      Variant:   (•) Free — no key   ( ) Keyed console                  │
-│      Endpoint:  [ https://api.easyocr.org/ocr            ] (advanced)  │
-│      Access key:[ ………………………… ]  (shown only when Keyed)               │
+│  ⠿  [▣ enabled]  EasyOCR                              [▲][▼][🗑]        │
+│      Access key *:[ ………………………… ]   ⚠ required                         │
+│      ▸ Advanced:  Endpoint [ https://console.easyocr.org/api/ocr ]     │
 │                                                                        │
 │  ⠿  [☐ enabled]  OCR.space                            [▲][▼][🗑]        │
 │      API key *: [ ………………………………………………… ]   ⚠ required                  │
@@ -56,16 +55,16 @@ Decision 8). Build components from shadcn primitives (`Button`, `Input`, `Switch
 | `GlobalSettings` | `timeoutMs` numeric field (clamped) |
 | `ProviderList` | ordered list = fallback chain; reorder (▲▼ / drag) mutates array order |
 | `ProviderCard` | one `ProviderEntry`; enable toggle, delete, expand advanced; renders the right sub-form by `provider` discriminant (the SPA's single switch) |
-| `EasyOcrFields` | `variant` radio; `endpoint`; `accessKey` (only when `keyed`) |
-| `OcrSpaceFields` | `apiKey` (required) + advanced: `scheme`,`httpMethod`,`inputMode`,`ocrEngine`,`language`,flags |
+| `EasyOcrFields` | `accessKey` (required) + advanced: `endpoint` |
+| `OcrSpaceFields` | `apiKey` (required) + advanced: `scheme`,`httpMethod`,`inputMode`,`ocrEngine` (default 2),`language`,flags |
 | `AddProviderMenu` | append a default entry of the chosen kind |
 | `SaveBar` | Save / Reset, dirty indicator, ack/error from bridge |
 
 ### Field rules surfaced in the UI
 - **Order = chain**: index 0 is primary; each lower row is the next fallback.
 - **Enabled toggle** excludes a provider from the runtime chain without deleting it.
-- **Required-key validation**: OCR.space with empty `apiKey`, or EasyOCR `keyed` with
-  empty `accessKey`, shows an inline ⚠ and is reported as misconfigured (FR-013/FR-021).
+- **Required-key validation**: OCR.space with empty `apiKey`, or EasyOCR with empty
+  `accessKey`, shows an inline ⚠ and is reported as misconfigured (FR-013/FR-021).
   Save is allowed (the entry is simply skipped on the portal) but the warning persists.
 - **Only the API/access key is required by default**; everything else is pre-filled with
   `DEFAULT_CONFIG` values and tucked under "Advanced options" (collapsed).

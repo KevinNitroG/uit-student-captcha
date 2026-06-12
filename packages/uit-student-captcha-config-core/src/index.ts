@@ -9,7 +9,7 @@ export type {
   EasyOcrEntry,
   OcrSpaceEntry,
 } from "./schema.ts";
-export { DEFAULT_CONFIG, TIMEOUT_MS_MIN, TIMEOUT_MS_MAX } from "./schema.ts";
+export { CONFIG_VERSION, DEFAULT_CONFIG, TIMEOUT_MS_MIN, TIMEOUT_MS_MAX } from "./schema.ts";
 export { validateConfig } from "./validate.ts";
 export type { BridgeMessage } from "./bridge.ts";
 export { STORAGE_KEY, isBridgeMessage } from "./bridge.ts";

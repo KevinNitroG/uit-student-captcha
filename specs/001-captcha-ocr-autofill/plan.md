@@ -96,7 +96,7 @@ packages/uit-student-captcha/                 # Userscript (MVVM)
     ├── model/
     │   ├── ocr/
     │   │   ├── OcrResolver.ts                # interface + OcrInput/OcrResult/OcrError types
-    │   │   ├── EasyOcrResolver.ts            # easyocr.org (free + keyed console variant)
+    │   │   ├── EasyOcrResolver.ts            # console.easyocr.org/api/ocr (key-only, X-Access-Key)
     │   │   ├── OcrSpaceResolver.ts           # ocr.space (http/https, GET/POST, engine 1-3, url/base64/file)
     │   │   ├── registry.ts                   # createResolver(factory) — the only provider switch
     │   │   └── errors.ts                     # OcrError + OcrErrorCode taxonomy

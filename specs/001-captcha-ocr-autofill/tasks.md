@@ -45,7 +45,7 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [X] T007 [P] Define `ProviderConfiguration` + `ProviderEntry` union + `DEFAULT_CONFIG` (EasyOCR-free enabled, OCR.space disabled) + `BridgeMessage`/`STORAGE_KEY` — **done** in `packages/uit-student-captcha-config-core/src/{schema,bridge,index}.ts` (data-model.md §3/§5)
+- [X] T007 [P] Define `ProviderConfiguration` + `ProviderEntry` union + `CONFIG_VERSION` + `DEFAULT_CONFIG` (empty provider chain — both providers are key-based) + `BridgeMessage`/`STORAGE_KEY` — **done** in `packages/uit-student-captcha-config-core/src/{schema,bridge,index}.ts` (data-model.md §3/§5)
 - [X] T004 [P] Define `OcrResolver` interface + `OcrInput`/`OcrResult` types in `packages/uit-student-captcha/src/model/ocr/OcrResolver.ts` (per contracts/ocr-resolver.contract.md, data-model.md §1)
 - [X] T005 [P] Define `OcrError` class + `OcrErrorCode` union in `packages/uit-student-captcha/src/model/ocr/errors.ts` (data-model.md §2)
 - [X] T006 [P] Implement `normalizeCaptchaText()` (strip to `[A-Za-z0-9]`, pick single longest token; empty → signal failure) in `packages/uit-student-captcha/src/model/ocr/normalize.ts` (FR-010)
@@ -60,14 +60,14 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 
 ## Phase 3: User Story 1 - Captcha is read and filled automatically (Priority: P1) 🎯 MVP
 
-**Goal**: On a portal page with the signin form, detect the captcha, recognize it with the default no-key provider (EasyOCR free), and fill the answer field — touching nothing else.
+**Goal**: On a portal page with the signin form, detect the captcha, recognize it with the configured provider (EasyOCR, key-based), and fill the answer field — touching nothing else.
 
 **Independent Test**: Load a portal page with the captcha, do nothing; the answer field fills with the recognized text within a few seconds; username/password/submit untouched (SC-001, SC-004).
 
 ### Implementation for User Story 1
 
-- [X] T012 [P] [US1] Implement `EasyOcrResolver` (free + keyed variants; multipart `file` bytes; `X-Access-Key` when keyed; map `words[]`/`text` → normalized result; HTTP-status error mapping) in `packages/uit-student-captcha/src/model/ocr/EasyOcrResolver.ts` (contracts/easyocr.contract.md)
-- [X] T013 [P] [US1] `EasyOcrResolver` tests — free 200 `{words}` → token; keyed missing `accessKey` → `MISSING_CONFIG`; 429 → `RATE_LIMIT`; `{words:[]}` → `EMPTY_RESULT` (fake HttpClient) in `packages/uit-student-captcha/test/EasyOcrResolver.spec.ts`
+- [X] T012 [P] [US1] Implement `EasyOcrResolver` (key-only; multipart `file` bytes; required `X-Access-Key` header; map `words[]`/`text` → normalized result; HTTP-status error mapping) in `packages/uit-student-captcha/src/model/ocr/EasyOcrResolver.ts` (contracts/easyocr.contract.md)
+- [X] T013 [P] [US1] `EasyOcrResolver` tests — 200 `{words}` → token; sends `X-Access-Key`; missing `accessKey` → `MISSING_CONFIG`; 429 → `RATE_LIMIT`; `{words:[]}` → `EMPTY_RESULT` (fake HttpClient) in `packages/uit-student-captcha/src/model/ocr/EasyOcrResolver.spec.ts`
 - [X] T014 [US1] Implement `createResolver(entry, http)` registry with the `easyocr` case — the only provider switch — in `packages/uit-student-captcha/src/model/ocr/registry.ts` (depends on T012; Constitution II)
 - [X] T015 [US1] Implement `CaptchaViewModel` — load+validate config, build `ocrResolvers[]` via registry, hold `imageUrl`/`imageBytes`, run the provider chain (single attempt each, normalize), expose `CaptchaStatus` — in `packages/uit-student-captcha/src/viewmodel/CaptchaViewModel.ts` (depends on T010, T014; data-model.md §4)
 - [X] T016 [P] [US1] `CaptchaViewModel` happy-path tests — single mocked resolver → `solved` with normalized text — in `packages/uit-student-captcha/test/CaptchaViewModel.us1.spec.ts`
@@ -75,7 +75,7 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 - [X] T018 [P] [US1] `PortalView` jsdom tests — fills only the answer input; absent form → no-op + console log; never writes `#edit-name`/`#edit-pass`/`#edit-submit--2` — in `packages/uit-student-captcha/test/PortalView.spec.ts`
 - [X] T019 [US1] Wire portal mode in `packages/uit-student-captcha/src/main.ts` — at `document-idle`, construct `GmHttpClient` + `CaptchaViewModel` + `PortalView`, run once with a solved-guard (FR-016/FR-017)
 
-**Checkpoint**: MVP — captcha auto-fills via EasyOCR free with zero user action.
+**Checkpoint**: MVP — once a provider is configured, the captcha auto-fills with zero user action per load.
 
 ---
 
@@ -111,7 +111,7 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 - [X] T028 [P] [US3] Re-export the shared config/bridge contract for SPA components — **done** in `packages/uit-student-captcha-config-page/src/config/schema.ts` (re-exports `uit-student-captcha-config-core`; replaces the old "mirror" approach per research.md Decision 9)
 - [X] T029 [US3] Add shadcn primitives used by the form (`input`, `label`, `switch`, `select`, `card`, `collapsible`, `badge`) via `mise exec npm:shadcn@latest -- shadcn add ...` into `packages/uit-student-captcha-config-page/src/components/ui/`
 - [X] T030 [P] [US3] Implement SPA `postMessageClient` — `uoc:get`/`uoc:set` with an explicit `targetOrigin`, origin-filtered receive validated with `isBridgeMessage` (imported from config-core) — in `packages/uit-student-captcha-config-page/src/bridge/postMessageClient.ts` (contracts/config-bridge.contract.md)
-- [X] T031 [P] [US3] Implement `EasyOcrFields` (variant radio, endpoint, conditional access key) in `packages/uit-student-captcha-config-page/src/components/EasyOcrFields.tsx`
+- [X] T031 [P] [US3] Implement `EasyOcrFields` (required access key + advanced endpoint) in `packages/uit-student-captcha-config-page/src/components/EasyOcrFields.tsx`
 - [X] T032 [P] [US3] Implement `OcrSpaceFields` (required API key + collapsible Advanced: scheme/method/inputMode/engine/language/flags) in `packages/uit-student-captcha-config-page/src/components/OcrSpaceFields.tsx`
 - [X] T033 [US3] Implement `ProviderCard` (discriminated `provider` switch → fields; enable toggle, delete) and `ProviderList` (reorder = chain order) in `packages/uit-student-captcha-config-page/src/components/` (depends on T031, T032)
 - [X] T034 [US3] Implement `GlobalSettings` (timeout), `AddProviderMenu`, and `SaveBar` (dirty/ack/error) in `packages/uit-student-captcha-config-page/src/components/`
@@ -132,8 +132,8 @@ and the **`uit-student-captcha-config-core` package scaffold** — its `schema.t
 - [X] T040 [P] Review userscript `@grant`/`@connect`/`@match` are minimal and complete (add `GM_openInTab` only if used) in `packages/uit-student-captcha/vite.config.ts` (Constitution V)
 - [X] T041 Run `pnpm exec nx run-many -t typecheck test build` and ensure it is green across both packages
 - [~] T042 [P] Execute the manual scenarios in `specs/001-captcha-ocr-autofill/quickstart.md` (install built `.user.js`, run scenarios 1–7) and record results.
-  - **Verified live (Chrome DevTools MCP)**: config page renders styled (Tailwind v4 + shadcn) with `DEFAULT_CONFIG` — EasyOCR (free) enabled primary, OCR.space disabled with the ⚠ required-key warning; **bridge round-trip** confirmed — an injected userscript-side `uoc:get`→`uoc:value` reply flips the indicator to "● Connected to userscript" and hydrates the posted config (timeout 9999, single provider). Covers SC-005 (config-page half) + FR-018/FR-021. No console errors (only a Brave React-DevTools shim warning + favicon 404).
-  - **Still pending (needs a userscript manager + the live portal — not installable in this headless env)**: scenarios 1–4 and 7 — portal autofill, provider fallback, no-form no-op, all-fail badge + Retry, and GM-storage persistence across reload. Covered at the unit level by the 45 co-located tests.
+  - **Verified live (Chrome DevTools MCP + the real portal)**: config page renders styled (Tailwind v4 + shadcn); **bridge round-trip** confirmed — `uoc:get`→`uoc:value` flips the indicator to "● Connected to userscript" and hydrates the saved config; **portal autofill works end-to-end** — with a configured EasyOCR key the captcha ("slow") was read and filled. Diagnosed/fixed live: vite-plugin-monkey GM access via `$` import; bridge on `unsafeWindow`; EasyOCR is key-only at `console.easyocr.org/api/ocr`; OCR.space needs engine 2; OCR run deferred to page `load`. Covers SC-001/002/005/006 + FR-018/FR-021.
+  - **Still worth a manual pass**: scenarios 2 (fallback) and 7 (Retry) across both providers with live keys, and GM-storage persistence across a browser restart. Covered at the unit level by the 50 co-located tests.
 - [X] T043 [P] Update `README.md` with install + configuration usage (menu command, providers, keys)
 
 ---
@@ -179,7 +179,7 @@ Task: "T018 PortalView jsdom tests"
 
 ### MVP First (User Story 1 only)
 
-1. Phase 1 Setup → 2. Phase 2 Foundational → 3. Phase 3 US1 → **STOP & VALIDATE** (captcha auto-fills via EasyOCR free) → demo.
+1. Phase 1 Setup → 2. Phase 2 Foundational → 3. Phase 3 US1 → **STOP & VALIDATE** (with a configured provider, the captcha auto-fills) → demo.
 
 ### Incremental Delivery
 
