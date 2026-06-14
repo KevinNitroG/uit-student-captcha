@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.2](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.3.1...v1.3.2) (2026-06-14)
+
+
+### Bug Fixes
+
+* build OCR request bodies without Blob/FormData for old Safari ([2276737](https://github.com/KevinNitroG/uit-student-captcha/commit/22767373bbbe88b6ee1ccf10b8c743460744ef9f))
+* build OCR request bodies without Blob/FormData for old Safari ([1e57947](https://github.com/KevinNitroG/uit-student-captcha/commit/1e5794795c5d35beed552fe44d0dedf40ce593c8))
+
 ## [1.3.1](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.3.0...v1.3.1) (2026-06-14)
 
 
