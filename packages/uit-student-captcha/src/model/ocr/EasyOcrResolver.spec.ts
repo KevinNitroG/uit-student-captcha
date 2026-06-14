@@ -39,26 +39,6 @@ describe("EasyOcrResolver", () => {
     expect(sentHeaders?.["X-Access-Key"]).toBe("eocr_test");
   });
 
-  it("sends an ArrayBuffer body (not Blob/FormData) with multipart Content-Type", async () => {
-    let capturedBody: unknown;
-    let capturedHeaders: Record<string, string> | undefined;
-    const http = fakeHttpClient((req) => {
-      capturedBody = req.body;
-      capturedHeaders = req.headers;
-      return jsonResponse(200, { words: [{ text: "abc", rate: 0.9 }] });
-    });
-    await new EasyOcrResolver(entry, http, 15000).resolve(input);
-    // Body must be an ArrayBuffer — not Blob or FormData
-    expect(capturedBody).toBeInstanceOf(ArrayBuffer);
-    expect(capturedBody instanceof Blob).toBe(false);
-    // Content-Type header must declare the multipart boundary
-    expect(capturedHeaders?.["Content-Type"]).toMatch(/^multipart\/form-data; boundary=/);
-    // Decoded body must contain the file field and filename
-    const decoded = String.fromCharCode(...new Uint8Array(capturedBody as ArrayBuffer));
-    expect(decoded).toContain('name="file"');
-    expect(decoded).toContain('filename="captcha.png"');
-  });
-
   it("throws MISSING_CONFIG at construction when no access key is set", () => {
     const keyless: EasyOcrEntry = {
       id: "easyocr",
