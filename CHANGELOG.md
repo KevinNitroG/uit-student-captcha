@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.3.0...v1.3.1) (2026-06-14)
+
+
+### Bug Fixes
+
+* show version warning when connected userscript sends no version ([50590e5](https://github.com/KevinNitroG/uit-student-captcha/commit/50590e51b7a5ce662559d52378e19d43cc189fb9))
+
 ## [1.3.0](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.2.1...v1.3.0) (2026-06-14)
 
 
