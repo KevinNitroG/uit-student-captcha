@@ -21,6 +21,9 @@ export interface PortalViewOptions {
   readonly extractBytes?: ByteExtractor;
   /** Config-page URL used by the missing-config notice. */
   readonly configUrl?: string;
+  /** When true (default when absent), lowercase the OCR result before filling
+   *  the captcha field. Mirrors ProviderConfiguration.lowercaseResult. */
+  readonly lowercaseResult?: boolean;
 }
 
 const LOG_PREFIX = "[uit-captcha]";
@@ -41,6 +44,7 @@ async function canvasExtractBytes(img: HTMLImageElement): Promise<Blob | null> {
 export class PortalView {
   private readonly extractBytes: ByteExtractor;
   private readonly badge: StatusBadge;
+  private readonly lowercaseResult: boolean;
   private context: SigninFormContext | null = null;
 
   constructor(
@@ -48,6 +52,7 @@ export class PortalView {
     options: PortalViewOptions = {},
   ) {
     this.extractBytes = options.extractBytes ?? canvasExtractBytes;
+    this.lowercaseResult = options.lowercaseResult ?? true;
     this.badge = new StatusBadge({
       onRetry: () => this.retry(),
       configUrl: options.configUrl ?? "#",
@@ -121,7 +126,8 @@ export class PortalView {
       console.info(`${LOG_PREFIX} captcha answer typed during OCR; keeping the user's value.`);
       return;
     }
-    input.value = text;
+    const finalText = this.lowercaseResult ? text.toLowerCase() : text;
+    input.value = finalText;
     input.dispatchEvent(new Event("input", { bubbles: true }));
     input.dispatchEvent(new Event("change", { bubbles: true }));
   }

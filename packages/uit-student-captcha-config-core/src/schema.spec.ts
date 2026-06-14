@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG, isBridgeMessage } from "./index.ts";
+import { CONFIG_VERSION, DEFAULT_CONFIG, isBridgeMessage } from "./index.ts";
 
 describe("DEFAULT_CONFIG", () => {
   it("ships no providers (every backend needs a key — user configures one)", () => {
@@ -8,6 +8,16 @@ describe("DEFAULT_CONFIG", () => {
 
   it("has a sane default per-attempt timeout", () => {
     expect(DEFAULT_CONFIG.timeoutMs).toBeGreaterThan(0);
+  });
+
+  it("lowercaseResult defaults to true", () => {
+    expect(DEFAULT_CONFIG.lowercaseResult).toBe(true);
+  });
+});
+
+describe("CONFIG_VERSION", () => {
+  it("is 2", () => {
+    expect(CONFIG_VERSION).toBe(2);
   });
 });
 

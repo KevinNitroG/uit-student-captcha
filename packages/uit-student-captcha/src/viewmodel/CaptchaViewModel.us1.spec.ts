@@ -7,8 +7,9 @@ import { fakeHttpClient, jsonResponse } from "../../test/helpers/mocks.ts";
 const http = fakeHttpClient(() => jsonResponse(200, {}));
 
 const oneProvider: ProviderConfiguration = {
-  version: 1,
+  version: 2,
   timeoutMs: 15000,
+  lowercaseResult: true,
   providers: [
     { id: "p", provider: "easyocr", endpoint: "https://x", enabled: true, accessKey: "k" },
   ],

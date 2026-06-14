@@ -4,11 +4,14 @@
 
 /** Persisted user settings. The ordered `providers` array IS the fallback chain. */
 export interface ProviderConfiguration {
-  readonly version: 1;
+  readonly version: 2;
   /** providers[0] = primary, [1] = first fallback, ... Order is the chain. */
   readonly providers: readonly ProviderEntry[];
   /** Per-attempt timeout in ms. */
   readonly timeoutMs: number;
+  /** When true (default), the View lowercases the normalized OCR result before
+   *  filling the captcha field. Portal captchas are consistently lowercase. */
+  readonly lowercaseResult: boolean;
 }
 
 /** Discriminated union keyed by `provider`. The discriminant is switched in exactly
@@ -49,7 +52,7 @@ export interface OcrSpaceEntry extends ProviderEntryBase {
 
 /** Current persisted-schema version. Bump on a breaking change and add a migration
  *  step in validateConfig(); a stored config with a newer version is reset to defaults. */
-export const CONFIG_VERSION = 1 as const;
+export const CONFIG_VERSION = 2 as const;
 
 /** Typed defaults. No provider is configured out of the box — every OCR backend needs
  *  a key (EasyOCR has no keyless endpoint, OCR.space requires an API key), so a bogus
@@ -59,6 +62,7 @@ export const DEFAULT_CONFIG: ProviderConfiguration = {
   version: CONFIG_VERSION,
   timeoutMs: 15_000,
   providers: [],
+  lowercaseResult: true,
 };
 
 /** Bounds used by validateConfig() when clamping user input. */

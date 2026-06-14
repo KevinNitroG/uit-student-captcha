@@ -20,8 +20,9 @@ function fails(id: string, code: OcrErrorCode): OcrResolver {
 function vmWith(resolvers: OcrResolver[]): CaptchaViewModel {
   let next = 0;
   const config: ProviderConfiguration = {
-    version: 1,
+    version: 2,
     timeoutMs: 15000,
+    lowercaseResult: true,
     providers: resolvers.map((_, i) => ({
       id: `p${i}`,
       provider: "easyocr",

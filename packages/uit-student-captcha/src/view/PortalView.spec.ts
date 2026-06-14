@@ -8,8 +8,9 @@ import { fakeHttpClient, jsonResponse } from "../../test/helpers/mocks.ts";
 const http = fakeHttpClient(() => jsonResponse(200, {}));
 
 const oneProvider: ProviderConfiguration = {
-  version: 1,
+  version: 2,
   timeoutMs: 15000,
+  lowercaseResult: true,
   providers: [
     { id: "p", provider: "easyocr", endpoint: "https://x", enabled: true, accessKey: "k" },
   ],
@@ -91,5 +92,40 @@ describe("PortalView", () => {
 
     expect(status).toBeNull();
     expect(info).toHaveBeenCalled();
+  });
+
+  it("lowercases the answer when lowercaseResult is true", async () => {
+    renderSigninForm();
+    const view = new PortalView(viewModelSolvingTo("AbCd12"), {
+      extractBytes: () => Promise.resolve(new Blob(["x"])),
+      lowercaseResult: true,
+    });
+
+    await view.run();
+
+    expect((document.querySelector("#edit-english-captcha-answer") as HTMLInputElement).value).toBe("abcd12");
+  });
+
+  it("preserves original casing when lowercaseResult is false", async () => {
+    renderSigninForm();
+    const view = new PortalView(viewModelSolvingTo("AbCd12"), {
+      extractBytes: () => Promise.resolve(new Blob(["x"])),
+      lowercaseResult: false,
+    });
+
+    await view.run();
+
+    expect((document.querySelector("#edit-english-captcha-answer") as HTMLInputElement).value).toBe("AbCd12");
+  });
+
+  it("lowercases by default when lowercaseResult is absent", async () => {
+    renderSigninForm();
+    const view = new PortalView(viewModelSolvingTo("AbCd12"), {
+      extractBytes: () => Promise.resolve(new Blob(["x"])),
+    });
+
+    await view.run();
+
+    expect((document.querySelector("#edit-english-captcha-answer") as HTMLInputElement).value).toBe("abcd12");
   });
 });

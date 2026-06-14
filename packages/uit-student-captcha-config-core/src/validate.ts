@@ -105,10 +105,11 @@ export function validateConfig(raw: unknown): ProviderConfiguration {
   }
 
   const timeoutMs = clampTimeout(obj["timeoutMs"]);
+  const lowercaseResult = asBoolean(obj["lowercaseResult"], true);
 
   const rawProviders = obj["providers"];
   if (!Array.isArray(rawProviders)) {
-    return { version: CONFIG_VERSION, timeoutMs, providers: DEFAULT_CONFIG.providers };
+    return { version: CONFIG_VERSION, timeoutMs, providers: DEFAULT_CONFIG.providers, lowercaseResult };
   }
 
   const providers: ProviderEntry[] = [];
@@ -119,5 +120,5 @@ export function validateConfig(raw: unknown): ProviderConfiguration {
     else if (entry["provider"] === "ocrspace") providers.push(validateOcrSpace(entry, index));
   });
 
-  return { version: CONFIG_VERSION, timeoutMs, providers };
+  return { version: CONFIG_VERSION, timeoutMs, providers, lowercaseResult };
 }

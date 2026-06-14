@@ -91,6 +91,8 @@ export function App({ client }: AppProps = {}) {
       <GlobalSettings
         timeoutMs={current.timeoutMs}
         onChange={(timeoutMs) => update({ ...current, timeoutMs })}
+        lowercaseResult={current.lowercaseResult}
+        onLowercaseChange={(lowercaseResult) => update({ ...current, lowercaseResult })}
       />
 
       <section className="space-y-3">

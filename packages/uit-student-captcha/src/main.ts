@@ -38,8 +38,12 @@ function runPortalMode(): void {
   gmRegisterMenuCommand("Configure OCR providers", () => gmOpenInTab(CONFIG_PAGE_URL));
 
   const http = new GmHttpClient();
-  const viewModel = new CaptchaViewModel(loadConfig(), http);
-  const view = new PortalView(viewModel, { configUrl: CONFIG_PAGE_URL });
+  const config = loadConfig();
+  const viewModel = new CaptchaViewModel(config, http);
+  const view = new PortalView(viewModel, {
+    configUrl: CONFIG_PAGE_URL,
+    lowercaseResult: config.lowercaseResult,
+  });
   // Run after the page has fully loaded so the OCR request never extends the page's
   // own load (the host tab kept showing a loading spinner otherwise).
   afterPageLoad(() => void view.run());

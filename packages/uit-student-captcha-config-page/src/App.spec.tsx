@@ -30,8 +30,9 @@ class FakeClient implements BridgeClient {
 }
 
 const WITH_KEYLESS_OCRSPACE: ProviderConfiguration = {
-  version: 1,
+  version: 2,
   timeoutMs: 15000,
+  lowercaseResult: true,
   providers: [
     {
       id: "ocrspace-1",
@@ -80,5 +81,22 @@ describe("App", () => {
   it("flags an empty required key with a ⚠ warning", () => {
     render(<App client={new FakeClient("ack", WITH_KEYLESS_OCRSPACE)} />);
     expect(screen.getByText(/required/i)).toBeTruthy();
+  });
+
+  it("renders the lowercase switch as checked by default", () => {
+    render(<App client={new FakeClient()} />);
+    const toggle = screen.getByRole("switch", { name: /lowercase ocr result/i });
+    expect((toggle as HTMLButtonElement).getAttribute("aria-checked") ?? (toggle as HTMLButtonElement).dataset["state"]).toBeTruthy();
+  });
+
+  it("includes lowercaseResult in the saved payload when toggled off", () => {
+    const client = new FakeClient("ack");
+    render(<App client={client} />);
+
+    fireEvent.click(screen.getByRole("switch", { name: /lowercase ocr result/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^save$/i }));
+
+    expect(client.saved).toHaveLength(1);
+    expect(client.saved[0]?.lowercaseResult).toBe(false);
   });
 });

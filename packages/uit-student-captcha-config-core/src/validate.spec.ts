@@ -78,4 +78,16 @@ describe("validateConfig", () => {
     });
     expect(cfg).toEqual(DEFAULT_CONFIG);
   });
+
+  it("lowercaseResult defaults to true when absent", () => {
+    expect(validateConfig({ providers: [] }).lowercaseResult).toBe(true);
+  });
+
+  it("lowercaseResult is preserved when explicitly false", () => {
+    expect(validateConfig({ providers: [], lowercaseResult: false }).lowercaseResult).toBe(false);
+  });
+
+  it("lowercaseResult coerces non-boolean to true", () => {
+    expect(validateConfig({ providers: [], lowercaseResult: "yes" }).lowercaseResult).toBe(true);
+  });
 });
