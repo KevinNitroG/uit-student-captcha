@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.1.2...v1.2.0) (2026-06-14)
+
+
+### Features
+
+* add lowercase OCR result toggle (default on) ([efce7bd](https://github.com/KevinNitroG/uit-student-captcha/commit/efce7bd1883f099e984937220ce014b6cd7ec8de))
+
 ## [1.1.2](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.1.1...v1.1.2) (2026-06-12)
 
 
