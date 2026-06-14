@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.2.0...v1.2.1) (2026-06-14)
+
+
+### Bug Fixes
+
+* validate config received from bridge in SPA to fill missing defaults ([24dd172](https://github.com/KevinNitroG/uit-student-captcha/commit/24dd172cfb4438af63dd8ed6a7a35bd8b29cf338))
+
 ## [1.2.0](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.1.2...v1.2.0) (2026-06-14)
 
 
