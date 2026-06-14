@@ -112,7 +112,7 @@ export function App({ client }: AppProps = {}) {
         </p>
       </header>
 
-      {versionStatus === "outdated" && scriptVersion && (
+      {connected && (versionStatus === "outdated" || versionStatus === "unknown") && (
         <VersionWarning
           scriptVersion={scriptVersion}
           pageVersion={__PAGE_VERSION__}

@@ -118,6 +118,12 @@ describe("App", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
+  it("shows a version warning when the userscript is connected but reports no version (old script)", () => {
+    render(<App client={new FakeClient("ack", DEFAULT_CONFIG, undefined)} />);
+    expect(screen.getByRole("alert")).toBeTruthy();
+    expect(screen.getByText(/unknown/i)).toBeTruthy();
+  });
+
   it("shows no version warning when the userscript is not connected", () => {
     render(<App client={new FakeClient("none")} />);
     expect(screen.queryByRole("alert")).toBeNull();
