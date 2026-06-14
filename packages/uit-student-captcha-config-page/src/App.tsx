@@ -8,8 +8,29 @@ import { AddProviderMenu } from "@/components/AddProviderMenu";
 import { GlobalSettings } from "@/components/GlobalSettings";
 import { ProviderList } from "@/components/ProviderList";
 import { SaveBar, type SaveState } from "@/components/SaveBar";
+import { VersionWarning } from "@/components/VersionWarning";
 import { DEFAULT_CONFIG, validateConfig, type ProviderConfiguration, type ProviderEntry } from "@/config/schema";
 import { PostMessageClient, type BridgeClient } from "@/bridge/postMessageClient";
+
+type VersionStatus = "match" | "outdated" | "newer" | "unknown";
+
+function parseVersion(v: string): [number, number, number] | null {
+  const parts = v.split(".").map(Number);
+  if (parts.length < 3 || parts.some((n) => !Number.isFinite(n))) return null;
+  return [parts[0]!, parts[1]!, parts[2]!];
+}
+
+function compareVersions(script: string | undefined, page: string): VersionStatus {
+  if (!script) return "unknown";
+  const sv = parseVersion(script);
+  const pv = parseVersion(page);
+  if (!sv || !pv) return "unknown";
+  for (let i = 0; i < 3; i++) {
+    if (sv[i]! < pv[i]!) return "outdated";
+    if (sv[i]! > pv[i]!) return "newer";
+  }
+  return "match";
+}
 
 export interface AppProps {
   /** Injectable for tests; defaults to the real postMessage bridge client. */
@@ -22,6 +43,7 @@ export function App({ client }: AppProps = {}) {
   const [connected, setConnected] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [save, setSave] = useState<SaveState>({ kind: "idle" });
+  const [scriptVersion, setScriptVersion] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     let settled = false;
@@ -35,6 +57,7 @@ export function App({ client }: AppProps = {}) {
         setConnected(true);
         setDirty(false);
         setSave({ kind: "idle" });
+        setScriptVersion(message.scriptVersion);
       } else if (message.type === "uoc:ack") {
         setSave({ kind: "saved" });
         setDirty(false);
@@ -63,6 +86,7 @@ export function App({ client }: AppProps = {}) {
   }, [bridge]);
 
   const current = config ?? DEFAULT_CONFIG;
+  const versionStatus = compareVersions(scriptVersion, __PAGE_VERSION__);
 
   function update(next: ProviderConfiguration): void {
     setConfig(next);
@@ -87,6 +111,14 @@ export function App({ client }: AppProps = {}) {
           )}
         </p>
       </header>
+
+      {versionStatus === "outdated" && scriptVersion && (
+        <VersionWarning
+          scriptVersion={scriptVersion}
+          pageVersion={__PAGE_VERSION__}
+          updateUrl={__UPDATE_URL__}
+        />
+      )}
 
       <GlobalSettings
         timeoutMs={current.timeoutMs}

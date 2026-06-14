@@ -12,6 +12,9 @@ export default defineConfig({
       $: fileURLToPath(new URL("./test/helpers/monkey.ts", import.meta.url)),
     },
   },
+  define: {
+    __SCRIPT_VERSION__: '"test-version"',
+  },
   test: {
     environment: "jsdom",
     globals: true,

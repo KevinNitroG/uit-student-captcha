@@ -9,7 +9,7 @@ export const STORAGE_KEY = "provider-configuration:v1";
 /** Messages exchanged over window.postMessage between the SPA and the userscript bridge. */
 export type BridgeMessage =
   | { readonly type: "uoc:get" }
-  | { readonly type: "uoc:value"; readonly payload: ProviderConfiguration }
+  | { readonly type: "uoc:value"; readonly payload: ProviderConfiguration; readonly scriptVersion?: string }
   | { readonly type: "uoc:set"; readonly payload: ProviderConfiguration }
   | { readonly type: "uoc:ack"; readonly ok: true }
   | { readonly type: "uoc:error"; readonly message: string };

@@ -9,8 +9,9 @@ class FakeClient implements BridgeClient {
   readonly saved: ProviderConfiguration[] = [];
 
   constructor(
-    private readonly reply: "ack" | "error" = "ack",
+    private readonly reply: "ack" | "error" | "none" = "ack",
     private readonly initial: ProviderConfiguration = DEFAULT_CONFIG,
+    private readonly scriptVersion?: string,
   ) {}
 
   onMessage(listener: BridgeListener): () => void {
@@ -19,13 +20,18 @@ class FakeClient implements BridgeClient {
   }
 
   requestConfig(): void {
-    this.listener?.({ type: "uoc:value", payload: this.initial });
+    if (this.reply === "none") return;
+    if (this.scriptVersion !== undefined) {
+      this.listener?.({ type: "uoc:value", payload: this.initial, scriptVersion: this.scriptVersion });
+    } else {
+      this.listener?.({ type: "uoc:value", payload: this.initial });
+    }
   }
 
   saveConfig(payload: ProviderConfiguration): void {
     this.saved.push(payload);
     if (this.reply === "ack") this.listener?.({ type: "uoc:ack", ok: true });
-    else this.listener?.({ type: "uoc:error", message: "Invalid configuration payload" });
+    else if (this.reply === "error") this.listener?.({ type: "uoc:error", message: "Invalid configuration payload" });
   }
 }
 
@@ -98,5 +104,22 @@ describe("App", () => {
 
     expect(client.saved).toHaveLength(1);
     expect(client.saved[0]?.lowercaseResult).toBe(false);
+  });
+
+  it("shows a version warning when the userscript reports an older version", () => {
+    render(<App client={new FakeClient("ack", DEFAULT_CONFIG, "1.0.0")} />);
+    expect(screen.getByRole("alert")).toBeTruthy();
+    expect(screen.getByText(/1\.0\.0/)).toBeTruthy();
+    expect(screen.getByRole("link", { name: /update now/i })).toBeTruthy();
+  });
+
+  it("shows no version warning when the userscript version matches the page version", () => {
+    render(<App client={new FakeClient("ack", DEFAULT_CONFIG, "1.2.0")} />);
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("shows no version warning when the userscript is not connected", () => {
+    render(<App client={new FakeClient("none")} />);
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });

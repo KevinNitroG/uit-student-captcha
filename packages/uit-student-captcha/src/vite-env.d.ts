@@ -9,3 +9,5 @@
 declare module "$" {
   export * from "vite-plugin-monkey/dist/client";
 }
+
+declare const __SCRIPT_VERSION__: string;

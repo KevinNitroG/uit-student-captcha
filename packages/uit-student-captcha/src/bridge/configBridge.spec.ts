@@ -42,11 +42,11 @@ describe("ConfigBridge", () => {
     );
   });
 
-  it("answers uoc:get with the stored configuration", () => {
+  it("answers uoc:get with the stored configuration and scriptVersion", () => {
     const { bridge, target, postMessage } = setup();
     bridge.handle(event({ type: "uoc:get" }, ALLOWED, target));
     expect(postMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "uoc:value" }),
+      expect.objectContaining({ type: "uoc:value", scriptVersion: "test-version" }),
       ALLOWED,
     );
   });

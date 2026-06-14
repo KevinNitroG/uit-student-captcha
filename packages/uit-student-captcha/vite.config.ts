@@ -63,5 +63,8 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
+    define: {
+      __SCRIPT_VERSION__: JSON.stringify(version),
+    },
   };
 });

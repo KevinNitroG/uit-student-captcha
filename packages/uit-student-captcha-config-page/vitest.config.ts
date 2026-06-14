@@ -6,6 +6,10 @@ import react from "@vitejs/plugin-react";
 // See .specify/memory/constitution.md → "Testing Discipline".
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __PAGE_VERSION__: '"1.2.0"',
+    __UPDATE_URL__: '"https://example.com/update"',
+  },
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },

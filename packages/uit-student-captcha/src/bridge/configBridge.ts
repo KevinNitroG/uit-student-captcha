@@ -59,7 +59,7 @@ export class ConfigBridge {
     const message = event.data;
     switch (message.type) {
       case "uoc:get":
-        this.reply({ type: "uoc:value", payload: this.loadConfig() });
+        this.reply({ type: "uoc:value", payload: this.loadConfig(), scriptVersion: __SCRIPT_VERSION__ });
         return;
       case "uoc:set": {
         const payload: unknown = message.payload;
