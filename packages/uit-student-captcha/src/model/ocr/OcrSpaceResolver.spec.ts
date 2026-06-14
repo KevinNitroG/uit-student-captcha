@@ -64,4 +64,66 @@ describe("OcrSpaceResolver", () => {
     expect(err).toBeInstanceOf(OcrError);
     expect((err as OcrError).code).toBe("EMPTY_RESULT");
   });
+
+  // --- body shape assertions (no Blob/FormData reaches the transport) ---
+
+  it("url-mode POST sends a urlencoded string body with application/x-www-form-urlencoded", async () => {
+    let capturedBody: unknown;
+    let capturedHeaders: Record<string, string> | undefined;
+    const http = fakeHttpClient((req) => {
+      capturedBody = req.body;
+      capturedHeaders = req.headers;
+      return ok("AB12C");
+    });
+    await new OcrSpaceResolver(entry, http, 15000).resolve(input);
+    expect(typeof capturedBody).toBe("string");
+    expect(capturedBody as string).toContain("url=");
+    expect(capturedBody as string).toContain("apikey=");
+    expect(capturedHeaders?.["Content-Type"]).toBe("application/x-www-form-urlencoded");
+    // Must not be Blob or FormData
+    expect(capturedBody instanceof Blob).toBe(false);
+  });
+
+  it("base64-mode POST sends a urlencoded string body containing base64Image", async () => {
+    const base64Entry: OcrSpaceEntry = { ...entry, inputMode: "base64" };
+    const base64Input: OcrInput = {
+      imageUrl: null,
+      imageBytes: new Blob(["img"], { type: "image/png" }),
+      mimeType: "image/png",
+    };
+    let capturedBody: unknown;
+    let capturedHeaders: Record<string, string> | undefined;
+    const http = fakeHttpClient((req) => {
+      capturedBody = req.body;
+      capturedHeaders = req.headers;
+      return ok("AB12C");
+    });
+    await new OcrSpaceResolver(base64Entry, http, 15000).resolve(base64Input);
+    expect(typeof capturedBody).toBe("string");
+    expect(capturedBody as string).toContain("base64Image=");
+    expect(capturedHeaders?.["Content-Type"]).toBe("application/x-www-form-urlencoded");
+    expect(capturedBody instanceof Blob).toBe(false);
+  });
+
+  it("file-mode POST sends an ArrayBuffer body with multipart Content-Type containing filename", async () => {
+    const fileEntry: OcrSpaceEntry = { ...entry, inputMode: "file" };
+    const fileInput: OcrInput = {
+      imageUrl: null,
+      imageBytes: new Blob(["img"], { type: "image/png" }),
+      mimeType: "image/png",
+    };
+    let capturedBody: unknown;
+    let capturedHeaders: Record<string, string> | undefined;
+    const http = fakeHttpClient((req) => {
+      capturedBody = req.body;
+      capturedHeaders = req.headers;
+      return ok("AB12C");
+    });
+    await new OcrSpaceResolver(fileEntry, http, 15000).resolve(fileInput);
+    expect(capturedBody).toBeInstanceOf(ArrayBuffer);
+    expect(capturedBody instanceof Blob).toBe(false);
+    expect(capturedHeaders?.["Content-Type"]).toMatch(/^multipart\/form-data; boundary=/);
+    const decoded = String.fromCharCode(...new Uint8Array(capturedBody as ArrayBuffer));
+    expect(decoded).toContain('filename="captcha.png"');
+  });
 });

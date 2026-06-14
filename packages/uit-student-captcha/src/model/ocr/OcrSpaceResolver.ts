@@ -5,6 +5,7 @@
 
 import type { OcrSpaceEntry } from "uit-student-captcha-config-core";
 import type { HttpClient } from "../http/HttpClient.ts";
+import { blobToUint8Array, buildMultipartBody, encodeUrlForm } from "../http/multipart.ts";
 import { OcrError } from "./errors.ts";
 import { normalizeCaptchaText } from "./normalize.ts";
 import type { OcrInput, OcrResolver, OcrResult } from "./OcrResolver.ts";
@@ -98,27 +99,45 @@ export class OcrSpaceResolver implements OcrResolver {
   }
 
   private async requestPost(input: OcrInput) {
-    const form = new FormData();
-    form.append("apikey", this.entry.apiKey);
-    form.append("OCREngine", String(this.entry.ocrEngine));
-    form.append("language", this.entry.language);
+    const fields: Record<string, string> = {
+      apikey: this.entry.apiKey,
+      OCREngine: String(this.entry.ocrEngine),
+      language: this.entry.language,
+    };
+    this.appendFlags(fields);
 
-    if (this.entry.inputMode === "url") {
-      if (!input.imageUrl) throw new OcrError("BAD_REQUEST", "OCR.space url mode needs an image URL", { provider: this.id });
-      form.append("url", input.imageUrl);
-    } else if (this.entry.inputMode === "base64") {
-      if (!input.imageBytes) throw new OcrError("BAD_REQUEST", "OCR.space base64 mode needs image bytes", { provider: this.id });
-      form.append("base64Image", await blobToDataUrl(input.imageBytes));
-    } else {
+    if (this.entry.inputMode === "file") {
       if (!input.imageBytes) throw new OcrError("BAD_REQUEST", "OCR.space file mode needs image bytes", { provider: this.id });
-      form.append("file", input.imageBytes, "captcha.png");
+      const bytes = await blobToUint8Array(input.imageBytes);
+      const { body, contentType } = buildMultipartBody(
+        fields,
+        { name: "file", filename: "captcha.png", contentType: "image/png", bytes },
+      );
+      return this.http.request({
+        method: "POST",
+        url: this.endpoint,
+        headers: { "Content-Type": contentType },
+        body,
+        timeoutMs: this.timeoutMs,
+        responseType: "json",
+      });
     }
 
-    this.appendFlags(form);
+    // url / base64 modes → urlencoded string body
+    if (this.entry.inputMode === "url") {
+      if (!input.imageUrl) throw new OcrError("BAD_REQUEST", "OCR.space url mode needs an image URL", { provider: this.id });
+      fields["url"] = input.imageUrl;
+    } else {
+      // base64 mode
+      if (!input.imageBytes) throw new OcrError("BAD_REQUEST", "OCR.space base64 mode needs image bytes", { provider: this.id });
+      fields["base64Image"] = await blobToDataUrl(input.imageBytes);
+    }
+
     return this.http.request({
       method: "POST",
       url: this.endpoint,
-      body: form,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: encodeUrlForm(fields),
       timeoutMs: this.timeoutMs,
       responseType: "json",
     });
@@ -141,10 +160,10 @@ export class OcrSpaceResolver implements OcrResolver {
     });
   }
 
-  private appendFlags(form: FormData): void {
-    if (this.entry.isOverlayRequired) form.append("isOverlayRequired", "true");
-    if (this.entry.detectOrientation) form.append("detectOrientation", "true");
-    if (this.entry.scale) form.append("scale", "true");
-    if (this.entry.isTable) form.append("isTable", "true");
+  private appendFlags(fields: Record<string, string>): void {
+    if (this.entry.isOverlayRequired) fields["isOverlayRequired"] = "true";
+    if (this.entry.detectOrientation) fields["detectOrientation"] = "true";
+    if (this.entry.scale) fields["scale"] = "true";
+    if (this.entry.isTable) fields["isTable"] = "true";
   }
 }
