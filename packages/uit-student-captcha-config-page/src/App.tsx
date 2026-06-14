@@ -8,7 +8,7 @@ import { AddProviderMenu } from "@/components/AddProviderMenu";
 import { GlobalSettings } from "@/components/GlobalSettings";
 import { ProviderList } from "@/components/ProviderList";
 import { SaveBar, type SaveState } from "@/components/SaveBar";
-import { DEFAULT_CONFIG, type ProviderConfiguration, type ProviderEntry } from "@/config/schema";
+import { DEFAULT_CONFIG, validateConfig, type ProviderConfiguration, type ProviderEntry } from "@/config/schema";
 import { PostMessageClient, type BridgeClient } from "@/bridge/postMessageClient";
 
 export interface AppProps {
@@ -31,7 +31,7 @@ export function App({ client }: AppProps = {}) {
       if (message.type === "uoc:value") {
         settled = true;
         if (timer) clearInterval(timer);
-        setConfig(message.payload);
+        setConfig(validateConfig(message.payload));
         setConnected(true);
         setDirty(false);
         setSave({ kind: "idle" });
