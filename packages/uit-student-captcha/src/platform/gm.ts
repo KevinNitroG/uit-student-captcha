@@ -54,7 +54,7 @@ export interface GmRequestDetails {
   method: "GET" | "POST";
   url: string;
   headers?: Record<string, string>;
-  data?: string | ArrayBuffer;
+  data?: string | FormData | Blob;
   timeout: number;
   responseType?: "blob";
 }

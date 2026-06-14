@@ -4,7 +4,6 @@
 
 import type { EasyOcrEntry } from "uit-student-captcha-config-core";
 import type { HttpClient } from "../http/HttpClient.ts";
-import { blobToUint8Array, buildMultipartBody } from "../http/multipart.ts";
 import { OcrError } from "./errors.ts";
 import { normalizeCaptchaText } from "./normalize.ts";
 import type { OcrInput, OcrResolver, OcrResult } from "./OcrResolver.ts";
@@ -53,21 +52,15 @@ export class EasyOcrResolver implements OcrResolver {
       throw new OcrError("BAD_REQUEST", "EasyOCR requires image bytes", { provider: this.id });
     }
 
-    const bytes = await blobToUint8Array(input.imageBytes);
-    const { body, contentType } = buildMultipartBody(
-      {},
-      { name: "file", filename: "captcha.png", contentType: "image/png", bytes },
-    );
-    const headers: Record<string, string> = {
-      "X-Access-Key": this.accessKey,
-      "Content-Type": contentType,
-    };
+    const form = new FormData();
+    form.append("file", input.imageBytes, "captcha.png");
+    const headers: Record<string, string> = { "X-Access-Key": this.accessKey };
 
     const res = await this.http.request({
       method: "POST",
       url: this.entry.endpoint,
       headers,
-      body,
+      body: form,
       timeoutMs: this.timeoutMs,
       responseType: "json",
     });

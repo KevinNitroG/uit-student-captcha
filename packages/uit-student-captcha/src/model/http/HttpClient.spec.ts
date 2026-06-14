@@ -38,21 +38,4 @@ describe("GmHttpClient", () => {
     expect(err).toBeInstanceOf(OcrError);
     expect((err as OcrError).code).toBe("NETWORK");
   });
-
-  it("passes an ArrayBuffer body as-is to GM_xmlhttpRequest data", async () => {
-    let capturedData: unknown;
-    const fn = installFakeXhr((details) => {
-      capturedData = (details as unknown as Record<string, unknown>)["data"];
-      return { status: 200, responseText: "{}", responseHeaders: "" };
-    });
-    const buf = new Uint8Array([1, 2, 3]).buffer;
-    await new GmHttpClient().request({
-      method: "POST",
-      url: "https://example.test",
-      body: buf,
-      timeoutMs: 1000,
-    });
-    expect(fn).toHaveBeenCalledOnce();
-    expect(capturedData).toBe(buf); // exact same ArrayBuffer reference
-  });
 });

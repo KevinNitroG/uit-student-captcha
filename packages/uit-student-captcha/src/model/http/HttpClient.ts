@@ -10,7 +10,7 @@ export interface HttpRequest {
   method: "GET" | "POST";
   url: string;
   headers?: Record<string, string>;
-  body?: string | ArrayBuffer;
+  body?: string | FormData | Blob;
   timeoutMs: number;
   responseType?: "text" | "json" | "blob";
 }
