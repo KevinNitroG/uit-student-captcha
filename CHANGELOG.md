@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.3](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.3.2...v1.3.3) (2026-06-14)
+
+
+### Reverts
+
+* remove old-Safari OCR body changes (004) ([fb99d4d](https://github.com/KevinNitroG/uit-student-captcha/commit/fb99d4d98b527db31e8fe1dcaceb41276a4abb41))
+* remove old-Safari OCR body changes (004) ([e043e10](https://github.com/KevinNitroG/uit-student-captcha/commit/e043e100e74a626bdcc1997a2ffe7de9e76ef9f7))
+
 ## [1.3.2](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.3.1...v1.3.2) (2026-06-14)
 
 
