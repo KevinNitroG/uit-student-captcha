@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.2.1...v1.3.0) (2026-06-14)
+
+
+### Features
+
+* show version mismatch warning on config page when userscript is outdated ([31582cd](https://github.com/KevinNitroG/uit-student-captcha/commit/31582cde823c38cbd55a9a29938b53c63ecff0df))
+
 ## [1.2.1](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.2.0...v1.2.1) (2026-06-14)
 
 
