@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.3.3...v1.4.0) (2026-07-07)
+
+
+### Features
+
+* **004:** add alt-text-first captcha solving with OCR fallback ([215e5f5](https://github.com/KevinNitroG/uit-student-captcha/commit/215e5f5ac8d0c0616d03b70b35c8a544c4cf006e))
+* opencode speckit ([44a70fc](https://github.com/KevinNitroG/uit-student-captcha/commit/44a70fc07125fd4d08fd517abd742bd9dd3a6084))
+
 ## [1.3.3](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.3.2...v1.3.3) (2026-06-14)
 
 

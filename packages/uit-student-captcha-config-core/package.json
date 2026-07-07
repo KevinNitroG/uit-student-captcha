@@ -1,6 +1,6 @@
 {
   "name": "uit-student-captcha-config-core",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "private": true,
   "type": "module",
   "description": "Shared config schema, defaults, and the postMessage bridge contract used by both the userscript and the config page. Consumed as TypeScript source (no build step).",
