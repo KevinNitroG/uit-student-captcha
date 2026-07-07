@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.4.0...v1.4.1) (2026-07-07)
+
+
+### Bug Fixes
+
+* bump ([f51141d](https://github.com/KevinNitroG/uit-student-captcha/commit/f51141d9a20c1459f9e9d2eac984feb927987b76))
+
 ## [1.4.0](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.3.3...v1.4.0) (2026-07-07)
 
 
