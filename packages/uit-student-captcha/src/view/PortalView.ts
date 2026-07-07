@@ -6,6 +6,7 @@
 
 import type { CaptchaStatus, CaptchaViewModel } from "../viewmodel/CaptchaViewModel.ts";
 import { StatusBadge } from "./statusBadge.ts";
+import { parseAltText } from "../model/ocr/AltTextResolver.ts";
 
 /** Detected DOM context (the ViewModel never reads the DOM). */
 export interface SigninFormContext {
@@ -101,7 +102,9 @@ export class PortalView {
     }
 
     this.viewModel.setImage(imageUrl, bytes, "image/png");
-    const status = await this.viewModel.solve();
+    // Try alt text extraction first: read the image's alt attribute and parse it.
+    const altResult = parseAltText(img.alt);
+    const status = await this.viewModel.solve(altResult);
 
     // Final render (covers the solved-guard short-circuit, which fires no transition).
     this.badge.render(context.captchaImage, status);

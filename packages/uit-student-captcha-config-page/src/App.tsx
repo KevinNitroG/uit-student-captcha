@@ -9,6 +9,7 @@ import { GlobalSettings } from "@/components/GlobalSettings";
 import { ProviderList } from "@/components/ProviderList";
 import { SaveBar, type SaveState } from "@/components/SaveBar";
 import { VersionWarning } from "@/components/VersionWarning";
+import { SolvingLogicInfo } from "@/components/SolvingLogicInfo";
 import { DEFAULT_CONFIG, validateConfig, type ProviderConfiguration, type ProviderEntry } from "@/config/schema";
 import { PostMessageClient, type BridgeClient } from "@/bridge/postMessageClient";
 
@@ -126,6 +127,8 @@ export function App({ client }: AppProps = {}) {
         lowercaseResult={current.lowercaseResult}
         onLowercaseChange={(lowercaseResult) => update({ ...current, lowercaseResult })}
       />
+
+      <SolvingLogicInfo />
 
       <section className="space-y-3">
         <h2 className="text-sm font-medium">

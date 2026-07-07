@@ -8,6 +8,7 @@ import type { HttpClient } from "../model/http/HttpClient.ts";
 import { OcrError } from "../model/ocr/errors.ts";
 import type { OcrInput, OcrResolver, OcrResult } from "../model/ocr/OcrResolver.ts";
 import { createResolver, type ResolverFactory } from "../model/ocr/registry.ts";
+import type { AltTextResult } from "../model/ocr/AltTextResolver.ts";
 
 export type CaptchaStatus =
   | { readonly kind: "idle" }
@@ -59,7 +60,7 @@ export class CaptchaViewModel {
   }
 
   /** Run the provider chain once each, in order, until one succeeds. */
-  async solve(): Promise<CaptchaStatus> {
+  async solve(altTextResult?: AltTextResult): Promise<CaptchaStatus> {
     // Solved-guard: don't re-solve the same image in a loop (FR-017). A manual Retry
     // calls reset() first, which clears the guard so the same image can be re-read.
     if (
@@ -68,6 +69,22 @@ export class CaptchaViewModel {
       this.solvedImageUrl === this.imageUrl
     ) {
       return this.status;
+    }
+
+    // Alt text first (new step): if the View extracted a valid captcha:<solution>,
+    // return immediately without calling any OCR provider.
+    if (altTextResult?.success && altTextResult.text) {
+      console.info(`[uit-captcha] captcha solved via alt text: ${altTextResult.text}`);
+      this.solvedImageUrl = this.imageUrl;
+      return this.setStatus({
+        kind: "solved",
+        result: {
+          provider: "alt-text",
+          rawText: altTextResult.rawAlt,
+          text: altTextResult.text,
+          confidence: null,
+        },
+      });
     }
 
     if (this.ocrResolvers.length === 0) {

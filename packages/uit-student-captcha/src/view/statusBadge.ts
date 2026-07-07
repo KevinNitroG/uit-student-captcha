@@ -82,7 +82,7 @@ export class StatusBadge {
       case "missing-config":
         root.style.color = "#b45309";
         root.append(
-          textNode("No OCR provider configured. "),
+          textNode("No captcha solution found (alt text unavailable). Configure an OCR provider as fallback. "),
           configLink("⚙ Open configuration", this.options.configUrl),
         );
         return;
