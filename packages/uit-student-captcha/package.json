@@ -1,7 +1,7 @@
 {
   "name": "uit-student-captcha",
   "private": true,
-  "version": "1.4.1",
+  "version": "1.1.2",
   "type": "module",
   "description": "Tampermonkey userscript that auto-fills the OCR captcha on the UIT student portal sign-in form.",
   "dependencies": {
