@@ -49,8 +49,17 @@ export default defineConfig(({ mode }) => {
           updateURL:
             "https://github.com/KevinNitroG/uit-student-captcha/releases/latest/download/uit-student-captcha.user.js",
           namespace: "kevinnitrog/uit-student-captcha",
-          match: ["https://student.uit.edu.vn/*", `${configOrigin}/*`],
-          connect: ["api.easyocr.org", "console.easyocr.org", "api.ocr.space", configHost],
+          match: [
+            "https://student.uit.edu.vn/*",
+            "https://daa.uit.edu.vn/*",
+            `${configOrigin}/*`,
+          ],
+          connect: [
+            "api.easyocr.org",
+            "console.easyocr.org",
+            "api.ocr.space",
+            configHost,
+          ],
           "run-at": "document-idle",
           version,
           grant: [
