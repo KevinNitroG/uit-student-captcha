@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.4.1...v1.5.0) (2026-07-15)
+
+
+### Features
+
+* support daa ([3df597f](https://github.com/KevinNitroG/uit-student-captcha/commit/3df597ff7c9998ba59f129f26c470749fb96561f))
+
 ## [1.4.1](https://github.com/KevinNitroG/uit-student-captcha/compare/v1.4.0...v1.4.1) (2026-07-07)
 
 
